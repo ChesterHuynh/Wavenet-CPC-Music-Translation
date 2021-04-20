@@ -14,12 +14,6 @@ import matplotlib
 import h5py
 import tqdm
 
-import sys
-include = Path(__file__).parents[2]
-if include not in sys.path:
-    sys.path.append(str(include))
-
-
 import src.data.utils as utils
 import src.models.wavenet_models as wavenet_models
 from src.data.utils import save_audio

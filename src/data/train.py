@@ -22,12 +22,6 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
-import sys
-include = Path(__file__).parents[2]
-if include not in sys.path:
-    sys.path.append(str(include))
-
-
 from src.data.data import DatasetSet
 from src.models.wavenet import WaveNet
 from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
