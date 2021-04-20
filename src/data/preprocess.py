@@ -11,6 +11,12 @@ import src.data.data as data
 from pathlib import Path
 
 
+def preprocess(input_path, output_path, norm_db=False):
+    dataset = data.EncodedFilesDataset(input_path)
+    dataset.dump_to_folder(output_path, norm_db=norm_db)
+    print('Preprocessing complete')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', type=Path, required=True,

@@ -6,13 +6,14 @@
 #
 # Reference: https://github.com/facebookresearch/music-translation/blob/master/src/utils.py
 
+import errno
 import logging
 import os
 import sys
 import time
 from datetime import timedelta
+from subprocess import call
 
-import numpy
 import numpy as np
 import torch
 from pathlib import Path
@@ -21,6 +22,71 @@ import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('agg')
 from scipy.io import wavfile
+
+
+def _check_exists(root):
+    return os.path.exists(os.path.join(root, "train_data")) and \
+        os.path.exists(os.path.join(root, "test_data")) and \
+        os.path.exists(os.path.join(root, "train_labels")) and \
+        os.path.exists(os.path.join(root, "test_labels"))
+
+
+def download_data(root):
+    """Download MusicNet data at root.
+    Adapted from https://github.com/jthickstun/pytorch_musicnet
+
+    Parameters
+    ----------
+    root : str, Path
+        Directory to download MusicNet data. Will create train_data, train_labels,
+        test_data, test_labels, and raw subdirectories.
+    """
+    from six.moves import urllib
+
+    if _check_exists(root):
+        return
+
+    try:
+        os.makedirs(os.path.join(root, "raw"))
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
+    
+    # Download musicnet.tar.gz
+    url = "https://homes.cs.washington.edu/~thickstn/media/musicnet.tar.gz"
+    filename = url.rpartition('/')[2]
+    file_path = os.path.join(root, "raw", filename)
+    if not os.path.exists(file_path):
+        print(f"Downloading {url}")
+        data = urllib.request.urlopen(url)
+        with open(file_path, 'wb') as f:
+            # stream the download to disk (it might not fit in memory!)
+            while True:
+                chunk = data.read(16*1024)
+                if not chunk:
+                    break
+                f.write(chunk)
+
+    # Unpack musicnet.tar.gz
+    extracted_folders = ["train_data", "train_labels", "test_data", "test_labels"]
+    if not all(map(lambda f: os.path.exists(os.path.join(root, f)), extracted_folders)):
+        print('Extracting ' + filename)
+        if call(["tar", "-xf", file_path, '-C', root, '--strip', '1']) != 0:
+            raise OSError("Failed tarball extraction")
+
+    # Download musicnet_metadata.csv
+    url = "https://homes.cs.washington.edu/~thickstn/media/musicnet_metadata.csv"
+    metadata = urllib.request.urlopen(url)
+    with open(os.path.join(root, 'musicnet_metadata.csv'), 'wb') as f:
+        while True:
+            chunk = metadata.read(16*1024)
+            if not chunk:
+                break
+            f.write(chunk)
+
+    print('Download Complete')
 
 
 class timeit:
@@ -39,15 +105,15 @@ class timeit:
 
 
 def mu_law(x, mu=255):
-    x = numpy.clip(x, -1, 1)
-    x_mu = numpy.sign(x) * numpy.log(1 + mu*numpy.abs(x))/numpy.log(1 + mu)
+    x = np.clip(x, -1, 1)
+    x_mu = np.sign(x) * np.log(1 + mu*np.abs(x))/np.log(1 + mu)
     return ((x_mu + 1)/2 * mu).astype('int16')
 
 
 def inv_mu_law(x, mu=255.0):
-    x = numpy.array(x).astype(numpy.float32)
+    x = np.array(x).astype(np.float32)
     y = 2. * (x - (mu+1.)/2.) / (mu+1.)
-    return numpy.sign(y) * (1./mu) * ((1. + mu)**numpy.abs(y) - 1.)
+    return np.sign(y) * (1./mu) * ((1. + mu)**np.abs(y) - 1.)
 
 
 class LossMeter(object):
