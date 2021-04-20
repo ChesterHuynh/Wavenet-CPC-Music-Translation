@@ -40,7 +40,7 @@ def main():
     # Split data into train-val-test
     random.seed(args.seed)
     split_dir = root / 'split'
-    for input_path in parse_data.glob("*/"):
+    for input_path in parsed_dir.glob("*/"):
         basename = os.path.basename(input_path)
         output_path = Path(split_dir / basename)
         split(input_path, output_path, train_ratio=0.8, val_ratio=0.1, 
