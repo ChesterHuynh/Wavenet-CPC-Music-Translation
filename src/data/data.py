@@ -328,7 +328,8 @@ class DatasetSet:
         else:
             augmentation = None
 
-        self.train_dataset = H5Dataset(dir / 'train', seq_len, epoch_len=10000000000,
+        epoch_len = 1000000
+        self.train_dataset = H5Dataset(dir / 'train', seq_len, epoch_len=epoch_len,
                                        dataset_name=args.h5_dataset_name, augmentation=augmentation,
                                        short=args.short, cache=False)
         self.train_loader = data.DataLoader(self.train_dataset,
@@ -338,7 +339,8 @@ class DatasetSet:
 
         self.train_iter = iter(self.train_loader)
 
-        self.valid_dataset = H5Dataset(dir / 'val', seq_len, epoch_len=1000000000,
+        epoch_len = 100000
+        self.valid_dataset = H5Dataset(dir / 'val', seq_len, epoch_len=epoch_len,
                                        dataset_name=args.h5_dataset_name, augmentation=augmentation,
                                        short=args.short)
         self.valid_loader = data.DataLoader(self.valid_dataset,
