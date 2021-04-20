@@ -10,6 +10,10 @@ import src.data.data as data
 import argparse
 from pathlib import Path
 import tqdm
+import sys
+include = Path(__file__).parents[2]
+if include not in sys.path:
+    sys.path.append(include)
 
 from src.data.utils import inv_mu_law, save_audio
 import torch
