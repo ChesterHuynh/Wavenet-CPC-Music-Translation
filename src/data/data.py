@@ -22,7 +22,7 @@ from scipy.io import wavfile
 import sys
 include = Path(__file__).parents[2]
 if include not in sys.path:
-    sys.path.append(include)
+    sys.path.append(str(include))
 
 import src.data.utils as utils
 from src.data.utils import mu_law

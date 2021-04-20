@@ -7,6 +7,12 @@
 # Reference: https://github.com/facebookresearch/music-translation/blob/master/src/preprocess.py
 
 import argparse
+
+import sys
+include = Path(__file__).parents[2]
+if include not in sys.path:
+    sys.path.append(str(include))
+
 import src.data.data as data
 from pathlib import Path
 

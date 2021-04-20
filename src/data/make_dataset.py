@@ -1,7 +1,12 @@
 import argparse
+import sys
 import os
 import random
 from pathlib import Path
+
+include = Path(__file__).parents[2]
+if include not in sys.path:
+    sys.path.append(str(include))
 
 from src.data.utils import download_data
 from src.data.parse import parse_data
