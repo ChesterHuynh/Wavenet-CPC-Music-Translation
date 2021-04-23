@@ -31,6 +31,7 @@ from src.models.wavenet_models import cross_entropy_loss
 from src.models.wavenet import WaveNet
 from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
 from src.data.utils import create_output_dir, LossMeter, wrap, LogFormatter
+from src.models.CPC import InfoNCELoss, CPC
 
 parser = argparse.ArgumentParser(description='PyTorch Code for A Universal Music Translation Network')
 # Env options:
