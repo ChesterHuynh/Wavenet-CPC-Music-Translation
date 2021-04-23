@@ -4,15 +4,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+import torch.optim as optim
 import math
 from pathlib import Path
 import os
 import tqdm
+from itertools import chain
+from torch.nn.utils import clip_grad_value_
 
 from src.data.utils import LossMeter
 from src.data.utils import LogFormatter
 from src.data.utils import create_output_dir
+from src.data.utils import wrap
 from src.data.data import DatasetSet
+from src.models.wavenet_models import cross_entropy_loss
 
 class UMTCPCTrainer:
     def __init__(self, args):
