@@ -27,12 +27,9 @@ def main():
 
     # Parse data into groups
     domains = [
-        ['Accompanied Violin', 'Beethoven'],
-        ['Solo Cello', 'Bach'],
-        ['Solo Piano', 'Bach'],
-        ['Solo Piano', 'Beethoven'],
-        ['String Quartet', 'Beethoven'],
-        ['Wind Quintet', 'Cambini'],
+        'Solo Cello',
+        'Solo Violin',
+        'Solo Piano'
     ]
     parsed_dir = root / 'parsed'
     parse_data(root, parsed_dir, domains)
