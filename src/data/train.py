@@ -21,10 +21,10 @@ from pathlib import Path
 from tqdm import tqdm
 import re
 
-from data import DatasetSet
-from wavenet import WaveNet
-from wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
-from utils import create_output_dir, LossMeter, wrap
+from src.data.data import DatasetSet
+from src.models.wavenet import WaveNet
+from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
+from src.data.utils import create_output_dir, LossMeter, wrap
 
 parser = argparse.ArgumentParser(description='PyTorch Code for A Universal Music Translation Network')
 # Env options:
