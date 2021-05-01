@@ -24,6 +24,7 @@ import re
 from src.data.data import DatasetSet
 from src.models.wavenet import WaveNet
 from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
+from src.models.cpc import CPCEncoder, InfoNCELoss
 from src.data.utils import create_output_dir, LossMeter, wrap
 
 parser = argparse.ArgumentParser(description='PyTorch Code for A Universal Music Translation Network')
@@ -139,8 +140,12 @@ class Trainer:
         self.evals_recon = [LossMeter(f'recon {i}') for i in range(self.args.n_datasets)]
         self.eval_d_right = LossMeter('eval d')
         self.eval_total = LossMeter('eval total')
+        
+        if args.model_name == 'UMT':
+            self.encoder = Encoder(args)
+        else:
+            self.encoder = CPCEncoder(args)
 
-        self.encoder = Encoder(args)
         self.discriminator = ZDiscriminator(args)
 
         if args.distributed:
@@ -218,6 +223,44 @@ class Trainer:
                 self.lr_managers.append(torch.optim.lr_scheduler.ExponentialLR(self.model_optimizers[i], args.lr_decay))
                 self.lr_managers[i].last_epoch = self.start_epoch
                 self.lr_managers[i].step()
+    
+    def init_hidden(self, use_gpu=True):
+        if use_gpu: return torch.zeros(1, self.args.batch_size, self.args.latent_d).cuda()
+        else: return torch.zeros(1, self.args.batch_size, self.args.latent_d)
+
+    def eval_batch_cpc(self, x, x_aug, dset_num):
+        x, x_aug = x.float(), x_aug.float()
+
+        hidden = self.init_hidden()
+
+        c, hidden, encode_samples, pred = self.encoder(x, hidden)
+        ## BUGFIX decoder ##
+        if self.args.distributed:
+            y = self.decoder(x, c)
+        else:
+            y = self.decoders[dset_num](x, c)
+
+        c_logits = self.discriminator(c)
+
+        c_classification = torch.max(c_logits, dim=1)[1]
+
+        c_accuracy = (c_classification == dset_num).float().mean()
+
+        self.eval_d_right.add(c_accuracy.data.item())
+
+        discriminator_right = F.cross_entropy(c_logits, torch.tensor([dset_num] * x.size(0)).long().cuda()).mean()
+        recon_loss = cross_entropy_loss(y, x)
+        self.evals_recon[dset_num].add(recon_loss.data.cpu().numpy().mean())
+
+        nce_loss = InfoNCELoss(encode_samples, pred, self.args.timestep)
+        self.evals_nce[dset_num].add(nce_loss.data.cpu().numpy())
+
+        total_loss = discriminator_right.data.item() * self.args.d_lambda + \
+                     recon_loss.mean().data.item() + nce_loss.data.item()
+
+        self.eval_total.add(total_loss)
+
+        return total_loss
 
     def eval_batch(self, x, x_aug, dset_num):
         x, x_aug = x.float(), x_aug.float()
@@ -248,6 +291,70 @@ class Trainer:
         self.eval_total.add(total_loss)
 
         return total_loss
+
+    def train_batch_cpc(self, x, x_aug, dset_num):
+        x, x_aug = x.float(), x_aug.float()
+
+        hidden = self.init_hidden()
+
+        # Optimize D - discriminator right
+        c, _, encoder_samples, pred = self.encoder(x, hidden)
+        c_logits = self.discriminator(c)
+        discriminator_right = F.cross_entropy(c_logits, torch.tensor([dset_num] * x.size(0)).long().cuda()).mean()
+        self.loss_d_right.add(discriminator_right.data.cpu())
+
+        # Get c_t for computing InfoNCE Loss
+        nce_loss = InfoNCELoss(encoder_samples, pred, self.args.timestep)
+        loss = discriminator_right * self.args.d_lambda + nce_loss
+        self.d_optimizer.zero_grad()
+        loss.backward()
+        if self.args.grad_clip is not None:
+            clip_grad_value_(self.discriminator.parameters(), self.args.grad_clip)
+
+        self.d_optimizer.step()
+
+        # optimize G - reconstructs well, discriminator wrong
+        c, _, encoder_samples, pred = self.encoder(x_aug, hidden)
+        if self.args.distributed:
+            y = self.decoder(x, c)
+        else:
+            y = self.decoders[dset_num](x, c)
+        c_logits = self.discriminator(c)
+        discriminator_wrong = - F.cross_entropy(c_logits, torch.tensor([dset_num] * x.size(0)).long().cuda()).mean()
+
+        if not (-100 < discriminator_right.data.item() < 100):
+            self.logger.debug(f'c_logits: {c_logits.detach().cpu().numpy()}')
+            self.logger.debug(f'dset_num: {dset_num}')
+
+        nce_loss = InfoNCELoss(encoder_samples, pred, self.args.timestep)
+        self.losses_nce[dset_num].add(nce_loss.data.cpu().numpy())
+
+        recon_loss = cross_entropy_loss(y, x)
+        self.losses_recon[dset_num].add(recon_loss.data.cpu().numpy().mean())
+
+        loss = (recon_loss.mean() + self.args.d_lambda * discriminator_wrong) + nce_loss
+
+        if self.args.distributed:
+            self.model_optimizer.zero_grad()
+        else:
+            self.model_optimizers[dset_num].zero_grad()
+        loss.backward()
+        if self.args.grad_clip is not None:
+            clip_grad_value_(self.encoder.parameters(), self.args.grad_clip)
+            if self.args.distributed:
+                clip_grad_value_(self.decoder.parameters(), self.args.grad_clip)
+            else:
+                for decoder in self.decoders:
+                    clip_grad_value_(decoder.parameters(), self.args.grad_clip)
+        ## BUGFIX model optimizer ##
+        if self.args.distributed:
+            self.model_optimizer.step()
+        else:
+            self.model_optimizers[dset_num].step()
+
+        self.loss_total.add(loss.data.item())
+
+        return loss.data.item()
 
     def train_batch(self, x, x_aug, dset_num):
         x, x_aug = x.float(), x_aug.float()
@@ -332,11 +439,17 @@ class Trainer:
                 else:
                     dset_num = batch_num % self.args.n_datasets
 
+                self.logger.info(f'Dataset: {self.args.data[dset_num]}')
+
                 x, x_aug = next(self.data[dset_num].train_iter)
 
                 x = wrap(x)
                 x_aug = wrap(x_aug)
-                batch_loss = self.train_batch(x, x_aug, dset_num)
+                
+                if self.args.model_name == 'UMT':
+                    batch_loss = self.train_batch(x, x_aug, dset_num)
+                else:
+                    batch_loss = self.train_batch_cpc(x, x_aug, dset_num)
 
                 train_enum.set_description(f'Train (loss: {batch_loss:.2f}) epoch {epoch}')
                 train_enum.update()
@@ -373,8 +486,12 @@ class Trainer:
 
                 x = wrap(x)
                 x_aug = wrap(x_aug)
-                batch_loss = self.eval_batch(x, x_aug, dset_num)
-
+                
+                if self.args.model_name == 'UMT':
+                    batch_loss = self.eval_batch(x, x_aug, dset_num)
+                else:
+                    batch_loss = self.eval_batch_cpc(x, x_aug, dset_num)
+                
                 valid_enum.set_description(f'Test (loss: {batch_loss:.2f}) epoch {epoch}')
                 valid_enum.update()
 
@@ -396,7 +513,7 @@ class Trainer:
 
         # Begin!
         for epoch in range(self.start_epoch, self.start_epoch + self.args.epochs):
-            self.logger.info(f'Starting epoch, Rank {self.args.rank}, Dataset: {self.args.data[self.args.rank]}')
+            self.logger.info(f'Starting epoch, Rank {self.args.rank}')
             self.train_epoch(epoch)
             self.evaluate_epoch(epoch)
 
@@ -446,7 +563,7 @@ class Trainer:
                             'decoder_state': self.decoders[i].module.state_dict(),
                             'discriminator_state': self.discriminator.module.state_dict(),
                             'model_optimizer_state': self.model_optimizers[i].state_dict(),
-                            'dataset': self.args.rank,
+                            'dataset': i, 
                             'd_optimizer_state': self.d_optimizer.state_dict()
                             },
                         save_path)
@@ -460,13 +577,6 @@ def main():
         args.distributed = int(os.environ['WORLD_SIZE']) > 1
 
     if args.distributed:
-        # import ipdb; ipdb.set_trace()
-        # if 'MASTER_ADDR' not in os.environ:
-        #     var = os.environ["SLURM_NODELIST"]
-        #     match = re.match(r'learnfair\[(\d+).*', var)
-        #     master_id = match.group(1)
-        #     os.environ["MASTER_ADDR"] = "learnfair" + master_id
-        #     print('Set MASTER_ADDR to', os.environ['MASTER_ADDR'])
         if int(os.environ['RANK']) == 0:
             args.is_master = True
         else:

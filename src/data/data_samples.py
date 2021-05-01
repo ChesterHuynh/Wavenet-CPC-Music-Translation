@@ -14,21 +14,7 @@ import tqdm
 from src.data.utils import inv_mu_law, save_audio
 import torch
 
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=Path, nargs='*',
-                        help='Path to data dir')
-    parser.add_argument('--data-from-args', type=Path,
-                        help='Path to args.pth')
-    parser.add_argument('--output', '-o', type=Path,
-                        help='Output path')
-    parser.add_argument('-n', type=int,
-                        help='Num samples to make')
-    parser.add_argument('--seq-len', type=int, default=80000)
-
-    args = parser.parse_args()
-
+def sample(args):
     if args.data:
         dataset_paths = args.data
     elif args.data_from_args:
@@ -50,6 +36,21 @@ def main():
             wav_data = inv_mu_law(wav_data.numpy())
             save_audio(wav_data, args.output / f'{dataset_id}/{i}.wav', rate=data.EncodedFilesDataset.WAV_FREQ)
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', type=Path, nargs='*',
+                        help='Path to data dir')
+    parser.add_argument('--data-from-args', type=Path,
+                        help='Path to args.pth')
+    parser.add_argument('--output', '-o', type=Path,
+                        help='Output path')
+    parser.add_argument('-n', type=int,
+                        help='Num samples to make')
+    parser.add_argument('--seq-len', type=int, default=80000)
+
+    args = parser.parse_args()
+
+    sample(args)
 
 if __name__ == '__main__':
     main()

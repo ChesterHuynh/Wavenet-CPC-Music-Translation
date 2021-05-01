@@ -22,37 +22,12 @@ from src.models.wavenet_generator import WavenetGenerator
 from src.models.nv_wavenet_generator import NVWavenetGenerator
 
 
-def parse_args():
-    parser = ArgumentParser()
-    parser.add_argument('--files', type=Path, nargs='+', required=False,
-                        help='Top level directories of input music files')
-    parser.add_argument('-o', '--output', type=Path,
-                        help='Output directory for output files')
-    parser.add_argument('--checkpoint', type=Path, required=True,
-                        help='Checkpoint path')
-    parser.add_argument('--decoders', type=int, nargs='*', default=[],
-                        help='Only output for the following decoder ID')
-    parser.add_argument('--rate', type=int, default=16000,
-                        help='Wav sample rate in samples/second')
-    parser.add_argument('--batch-size', type=int, default=6,
-                        help='Batch size during inference')
-    parser.add_argument('--sample-len', type=int,
-                        help='If specified, cuts sample lengths')
-    parser.add_argument('--split-size', type=int, default=20,
-                        help='Size of splits')
-    parser.add_argument('--output-next-to-orig', action='store_true')
-    parser.add_argument('--skip-filter', action='store_true')
-    parser.add_argument('--py', action='store_true', help='Use python generator')
-
-    return parser.parse_args()
-
 
 def extract_id(path):
     decoder_id = str(path)[:-4].split('_')[-1]
     return int(decoder_id)
 
-
-def main(args):
+def generate(args):
     print('Starting')
     matplotlib.use('agg')
 
@@ -131,13 +106,15 @@ def main(args):
         zz = []
         for xs_batch in torch.split(xs, args.batch_size):
             zz += [encoder(xs_batch)]
-        zz = torch.cat(zz, dim=0)
+        #zz = torch.cat(zz, dim=0) TODO: bring this line back once context vectors have consistent dims
 
         with utils.timeit("Generation timer"):
             for i, decoder_id in enumerate(decoder_ids):
                 yy[decoder_id] = []
                 decoder = decoders[i]
-                for zz_batch in torch.split(zz, args.batch_size):
+                #for zz_batch in torch.split(zz, args.batch_size):
+                # TODO: avoid using hack for inconsistent dimensions in context vectors
+                for zz_batch in zz:
                     print(zz_batch.shape)
                     splits = torch.split(zz_batch, args.split_size, -1)
                     audio_data = []
@@ -154,6 +131,32 @@ def main(args):
             save(sample_result, decoder_ix, filepath)
 
 
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('--files', type=Path, nargs='+', required=False,
+                        help='Top level directories of input music files')
+    parser.add_argument('-o', '--output', type=Path,
+                        help='Output directory for output files')
+    parser.add_argument('--checkpoint', type=Path, required=True,
+                        help='Checkpoint path')
+    parser.add_argument('--decoders', type=int, nargs='*', default=[],
+                        help='Only output for the following decoder ID')
+    parser.add_argument('--rate', type=int, default=16000,
+                        help='Wav sample rate in samples/second')
+    parser.add_argument('--batch-size', type=int, default=6,
+                        help='Batch size during inference')
+    parser.add_argument('--sample-len', type=int,
+                        help='If specified, cuts sample lengths')
+    parser.add_argument('--split-size', type=int, default=20,
+                        help='Size of splits')
+    parser.add_argument('--output-next-to-orig', action='store_true')
+    parser.add_argument('--skip-filter', action='store_true')
+    parser.add_argument('--py', action='store_true', help='Use python generator')
+
+    args = parser.parse_args()
+
+    generate(args)
+
 if __name__ == '__main__':
     with torch.no_grad():
-        main(parse_args())
+        main()
