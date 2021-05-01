@@ -28,6 +28,8 @@ from src.data.utils import create_output_dir, LossMeter, wrap
 
 parser = argparse.ArgumentParser(description='PyTorch Code for A Universal Music Translation Network')
 # Env options:
+parser.add_argument('--model-name', type=str, required=True, choices=['UMT', 'UMTCPC'], 
+                    help='UMT or UMTCPC')
 parser.add_argument('--epochs', type=int, default=10000, metavar='N',
                     help='number of epochs to train (default: 92)')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
