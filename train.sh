@@ -2,7 +2,7 @@
 set -e -x
 
 CODE=src
-DATA=/home/ChesterHuynh/Wavenet-CPC-Music-Translation/data/musicnet/preprocessed
+DATA=data/musicnet/preprocessed
 EXP=musicnet
 export MASTER_PORT=29500
 
