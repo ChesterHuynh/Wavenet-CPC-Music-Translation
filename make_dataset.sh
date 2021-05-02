@@ -4,5 +4,5 @@ set -e -x
 CODE=src
 DATA=data/musicnet
 
-python ${CODE}/data/make_dataset.py \
+python3.7 ${CODE}/data/make_dataset.py \
     --input ${DATA}

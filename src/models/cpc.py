@@ -18,7 +18,7 @@ class CPCEncoder(nn.Module):
         batch_size = args.batch_size
 
         super().__init__()
-
+        self.args = args
         self.batch_size = batch_size
         self.seq_len = seq_len
         self.timestep = timestep
@@ -82,7 +82,7 @@ class CPCEncoder(nn.Module):
         forward_seq = z[:,:t_samples+1,:] # e.g. size 8*100*512
 
         output, hidden = self.gru(forward_seq, hidden) # output size e.g. 8*100*256
-        c_t = output[:,t_samples,:].view(batch, args.latent_d) # c_t e.g. size 8*256
+        c_t = output[:,t_samples,:].view(batch, self.args.latent_d) # c_t e.g. size 8*256
         pred = torch.empty((self.timestep, batch, 512)).float() # e.g. size 12*8*512
         for i in np.arange(self.timestep):
             linear = self.Wk[i]
