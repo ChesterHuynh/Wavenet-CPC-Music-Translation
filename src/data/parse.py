@@ -116,12 +116,18 @@ def parse_data(src, dst, domains):
     traindir = src / 'train_data'
     testdir = src /'test_data'
 
-    for ensemble in domains:
-        fid_list = db[db["ensemble"] == ensemble].id.tolist()
-        total_time = sum(db[db["ensemble"] == ensemble].seconds.tolist())
-        print(f"Total time for {ensemble} is: {total_time} seconds")
+    for (ensemble, composer) in domains:
+        if composer == "":
+            fid_list = db[db["ensemble"] == ensemble].id.tolist()
+            total_time = sum(db[db["ensemble"] == ensemble].seconds.tolist())
+            print(f"Total time for {ensemble} is: {total_time} seconds")
+            domaindir = dst / f"{ensemble.replace(' ', '_')}"
+        else:
+            fid_list = db[(db["composer"] == composer) & (db["ensemble"] == ensemble)].id.tolist()
+            total_time = sum(db[(db["composer"] == composer) & (db["ensemble"] == ensemble)].seconds.tolist())
+            print(f"Total time for {composer} with {ensemble} is: {total_time} seconds")
+            domaindir = dst / f"{composer}_{ensemble.replace(' ', '_')}"
 
-        domaindir = dst / f"{ensemble.replace(' ', '_')}"
         if not os.path.exists(domaindir):
             os.mkdir(domaindir)
 
@@ -148,21 +154,27 @@ def main():
     dst.mkdir(exist_ok=True, parents=True)
 
     domains = [
-        'Solo Cello',
-        'Solo Violin',
-        'Solo Piano'
+        ['Solo Cello', ''],
+        ['Solo Violin', ''],
+        ['Solo Piano', 'Beethoven']
     ]
 
     db = pd.read_csv(src / 'musicnet_metadata.csv')
     traindir = src / 'train_data'
     testdir = src / 'test_data'
 
-    for ensemble in domains:
-        fid_list = db[db["ensemble"] == ensemble].id.tolist()
-        total_time = sum(db[db["ensemble"] == ensemble].seconds.tolist())
-        print(f"Total time for {ensemble} is: {total_time} seconds")
+    for (ensemble, composer) in domains:
+        if composer == "":
+            fid_list = db[db["ensemble"] == ensemble].id.tolist()
+            total_time = sum(db[db["ensemble"] == ensemble].seconds.tolist())
+            print(f"Total time for {ensemble} is: {total_time} seconds")
+            domaindir = dst / f"{ensemble.replace(' ', '_')}"
+        else:
+            fid_list = db[(db["composer"] == composer) & (db["ensemble"] == ensemble)].id.tolist()
+            total_time = sum(db[(db["composer"] == composer) & (db["ensemble"] == ensemble)].seconds.tolist())
+            print(f"Total time for {composer} with {ensemble} is: {total_time} seconds")
+            domaindir = dst / f"{composer}_{ensemble.replace(' ', '_')}"
 
-        domaindir = dst / f"{ensemble.replace(' ', '_')}"
         if not os.path.exists(domaindir):
             os.mkdir(domaindir)
 
