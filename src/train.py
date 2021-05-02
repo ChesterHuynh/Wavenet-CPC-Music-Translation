@@ -43,10 +43,12 @@ class Trainer:
             os.environ['WORLD_SIZE']), "Number of datasets must match number of nodes"
 
         self.losses_recon = [LossMeter(f'recon {i}') for i in range(self.args.n_datasets)]
+        self.losses_nce = [LossMeter(f'nce {i}') for i in range(self.args.n_datasets)]
         self.loss_d_right = LossMeter('d')
         self.loss_total = LossMeter('total')
 
         self.evals_recon = [LossMeter(f'recon {i}') for i in range(self.args.n_datasets)]
+        self.evals_nce = [LossMeter(f'nce {i}') for i in range(self.args.n_datasets)]
         self.eval_d_right = LossMeter('eval d')
         self.eval_total = LossMeter('eval total')
         
