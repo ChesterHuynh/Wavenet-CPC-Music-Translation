@@ -2,14 +2,14 @@
 set -e -x
 
 CODE=src
-DATA=/musicnet/preprocessed
+DATA=/home/ChesterHuynh/Wavenet-CPC-Music-Translation/data/musicnet/preprocessed
 EXP=musicnet
 export MASTER_PORT=29500
 
-python ${CODE}/train.py \
-    --data ${DATA}/Bach_Solo_Cello  \
+python3.7 ${CODE}/train.py \
+    --data ${DATA}/Solo_Cello  \
+           ${DATA}/Solo_Violin \
            ${DATA}/Beethoven_Solo_Piano \
-           ${DATA}/Bach_Solo_Piano \
     --model-name $1 \
     --epochs 1 \
     --batch-size 1 \
