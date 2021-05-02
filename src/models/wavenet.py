@@ -107,8 +107,10 @@ class WaveNet(nn.Module):
         assert bsz == cond_bsz
 
         if c.size(2) != 1:
-            c = c.unsqueeze(3).repeat(1, 1, 1, length // cond_length)
-            c = c.view(bsz, cond_channels, length)
+            # c = c.unsqueeze(3).repeat(1, 1, 1, length // cond_length)
+            # c = c.view(bsz, cond_channels, length)
+            upsample = nn.Upsample(size=length)
+            c = upsample(c)
 
         return c
 
