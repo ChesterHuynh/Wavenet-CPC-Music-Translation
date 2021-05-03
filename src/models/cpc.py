@@ -1,5 +1,4 @@
 from __future__ import print_function
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -7,6 +6,19 @@ import torch.nn as nn
 # Paper reference: 'Representation Learning with Contrastive Predictive Coding'
 
 class CPC(nn.Module):
+    """
+    Creates a contrastive predictive coding model with a strided convolutional 
+    encoder and GRU RNN autoregressor as described by [1] and used in [2].
+
+    References
+    ----------
+    [1] van der Oord et al., "Representation Learning with Contrastive 
+        Predictive Coding", arXiv, 2019.
+        https://arxiv.org/abs/1807.03748
+    
+    [2] Lai, "Contrastive-Predictive-Coding-PyTorch", GitHub.
+        https://github.com/jefflai108/Contrastive-Predictive-Coding-PyTorch
+    """
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential( # downsampling factor = 160
@@ -30,13 +42,17 @@ class CPC(nn.Module):
 
     def forward(self, x):
         """
-        Input
-        x : torch.Tensor [n_samples, n_steps]
+        Parameters
+        ----------
+            x : B x 1 x L torch.Tensor
+                Input batch of audio sequence with B samples and length L.
 
-        Output
-        z : torch.Tensor [n_samples, ...?]
-
-        c : torch.Tensor [n_samples, ...?]
+        Returns
+        -------
+            z : B x (L // 160) x 512 torch.Tensor
+                Encoded representation of audio sequence with 512 channels.
+            c : B x (L // 160) x 256 torch.Tensor
+                Context-encoded representation of audio sequence with 256 channels.
         """
         # Use encoder to get sequence of latent representations z_t
         z = self.encoder(x)
@@ -48,6 +64,20 @@ class CPC(nn.Module):
         return z, c
 
 class InfoNCELoss(nn.Module):
+    """
+    Creates a criterion that computes the InfoNCELoss as described in [1].
+    
+    Parameters
+    ----------
+        prediction_step : int
+            Number of steps to predict into the future using context vector c
+
+    References
+    ----------
+    [1] van der Oord et al., "Representation Learning with Contrastive 
+        Predictive Coding", arXiv, 2019.
+        https://arxiv.org/abs/1807.03748
+    """
     def __init__(self, prediction_step):
         super().__init__()
         self.prediction_step = prediction_step
@@ -56,11 +86,28 @@ class InfoNCELoss(nn.Module):
         )
 
     def get_neg_z(self, z, k, t, n_replicates):
-        cur_device = z.get_device() if z.get_device() != -1 else "cpu:0"
+        """
+        Parameters
+        ----------
+            z : B x L x 512 torch.Tensor
+                Encoded representation of audio sequence.
+            k : int
+                Number of time steps in the future for prediction
+            t : B torch.Tensor
+                Current time step for each sample in the batch
+            n_replicates : int
+                Number of repetitions of the negative sampling procedure
+
+        Returns
+        -------
+            neg_samples : B x L-1 x N_rep x 512 torch.Tensor
+                Batch-wise average InfoNCE loss
+        """
+        cur_device = z.get_device() if z.get_device() != -1 else "cpu"
 
         neg_idx = torch.vstack([torch.cat([
-            torch.arange(0, t_i + k), 
-            torch.arange(t_i + k + 1, z.size(1))
+            torch.arange(0, t_i + k),             # indices before t+k
+            torch.arange(t_i + k + 1, z.size(1))  # indices after t+k
         ]) for t_i in t])
 
         neg_samples = torch.vstack([z[i, neg_idx[i]].unsqueeze(0) for i in range(len(t))])
@@ -75,21 +122,32 @@ class InfoNCELoss(nn.Module):
         return neg_samples
         
     
-    def forward(self, z, c, n_replicates=2):
+    def forward(self, z, c, n_replicates):
         """
-        z : (batch, encoding_len, 512)
-        c : (batch, encoding_len, 256)
+        Parameters
+        ----------
+            z : B x L x 512 torch.Tensor
+                Encoded representation of audio sequence.
+            c : B x L x 256 torch.Tensor
+                Context-encoded representation of audio sequence.
+            n_replicates : int
+                Number of times to make a set of negative samples.
+        
+        Returns
+        -------
+            loss : float Tensor
+                Batch-wise average InfoNCE loss
         """
         loss = 0
 
         n_batches = z.size(0)
 
         # Sample random t for each batch
-        cur_device = z.get_device() if z.get_device() != -1 else "cpu:0"
+        cur_device = z.get_device() if z.get_device() != -1 else "cpu"
         t = torch.randint(z.size(1) - self.prediction_step - 1, (n_batches,)).to(cur_device)
 
         # Get context vector c_t
-        c_t = torch.vstack([c[i, t[i]].unsqueeze(0) for i in range(n_batches)]) # B x 256
+        c_t = c[torch.arange(n_batches), t] # B x 256
 
         for k in range(1, self.prediction_step + 1):
             # Perform negative sampling
@@ -100,14 +158,12 @@ class InfoNCELoss(nn.Module):
             pred = linear(c_t) # B x C
 
             # Get positive z_t+k sample
-            pos_sample = torch.vstack([z[i, t[i] + k].unsqueeze(0) for i in range(n_batches)]) # B x C
+            pos_sample = z[torch.arange(n_batches), t+k]
 
             # Positive sample: compute f_k(x_t+k, c_t)
             # Only take diagonal elements to get product between matched batches
             fk_pos = torch.diag(torch.matmul(pos_sample, pred.T)) # B (1-D tensor)
-            fk_pos_rep = torch.cat(
-                    [fk_pos]*n_replicates
-                ).view(1, 1, n_replicates, fk_pos.size(0)) # 1 x 1 x N_rep x B
+            fk_pos_rep = fk_pos.repeat(n_replicates).view(1, 1, n_replicates, fk_pos.size(0)) # 1 x 1 x N_rep x B
 
             # Negative samples: compute f_k(x_j, c_t)
             # Only take diagonal elements to get products between matched batches
@@ -130,6 +186,6 @@ class InfoNCELoss(nn.Module):
         loss /= self.prediction_step
 
         # Average over batches
-        loss = loss.sum()/z.size(0)
+        loss = loss.sum() / n_batches
 
         return loss
