@@ -21,7 +21,7 @@ def smooth(x,window_len=11,window='hanning'):
     if window_len<3:
             return x
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-            raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+            raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
     s=np.r_[2*x[0]-x[window_len-1::-1],x,2*x[-1]-x[-1:-window_len:-1]]
     if window == 'flat': #moving average
             w=np.ones(window_len,'d')
@@ -35,7 +35,7 @@ def corrCalc(pitches, pitches_2):
     b = (pitches_2 - np.mean(pitches_2)) / (np.std(pitches_2))
     c = np.correlate(a, b, 'same') / max(len(a), len(b))
 
-    return c
+    return np.max(c)
 
 def compare(original, translated):
     # Get the original and translated samples
@@ -44,12 +44,12 @@ def compare(original, translated):
 
     # Calculate their pitches and magnitudes using piptrack
     pitches_orig, magnitudes_orig = librosa.piptrack(wave_data_orig, sr=samplerate)
-    piches_orig, magnitudes_orig = extract_max(pitches_orig,magnitudes, np.shape(pitches))
-    piches_orig = smooth(np.asarray(piches_orig), window_len=20)
-    pitches_trans = np.asarray(pitches_orig)
+    pitches_orig, magnitudes_orig = extract_max(pitches_orig,magnitudes_orig, np.shape(pitches_orig))
+    pitches_orig = smooth(np.asarray(pitches_orig), window_len=20)
+    pitches_orig = np.asarray(pitches_orig)
 
     pitches_trans, magnitudes_trans = librosa.piptrack(wave_data_translated, sr=samplerate)
-    pitches_trans, magnitudes_trans = extract_max(pitches_trans,magnitudes, np.shape(pitches_2))
+    pitches_trans, magnitudes_trans = extract_max(pitches_trans,magnitudes_trans, np.shape(pitches_trans))
     pitches_trans = smooth(np.asarray(pitches_trans), window_len=20)
     pitches_trans = np.asarray(pitches_trans)
 
@@ -66,24 +66,23 @@ def compare(original, translated):
 
     # Calculate the correlation for the best shift
     corr = corrCalc(pitches_orig, pitches_trans)
-    print(f'Correlation after DTW: {corr:.4f}')
-    
+    print(corr)
+
     return corr
 
 def main():
     path = '/home/magjywang/music-translation/results/29_04_2021/musicnet-py/0/'
     correlations = []
     for filename in glob.glob(os.path.join(path, '*.wav')):
-        if len(filename[0:-4]) > 1:
-            original = filename[0] + '.wav'
+        if len(filename[len(path):-4]) > 1:
+            original = path + filename[-7] + '.wav'
             translated = filename
-
             corr = compare(original, translated)
-            correlations.append([filename, str(corr)])
-    
+            correlations.append([original[len(path):], filename[len(path):], str(corr)])
+
     with open('output.txt', 'w') as f:
-    for i in correlations:
-        f.write('%s\n' % i)
+        for i in correlations:
+            f.write('%s\n' % i)
 
 if __name__ == "__main__":
     main()
