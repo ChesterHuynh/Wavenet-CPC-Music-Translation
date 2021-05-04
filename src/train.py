@@ -83,7 +83,8 @@ class Trainer:
                     self.decoders[i].load_state_dict(states[i]['decoder_state'])
 
                     # XXX: comment requires_grad lines if training these layers
-                    for name, p in self.decoders[i].named_parameters():
+                    for p in self.decoders[i].parameters():
+                    # for name, p in self.decoders[i].named_parameters():
                         # if "logits" in name:
                         #     continue
                         p.requires_grad = False
