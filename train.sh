@@ -17,7 +17,7 @@ python3.7 ${CODE}/train.py \
     --lr-decay 0.995 \
     --epoch-len 1000 \
     --num-workers 0 \
-    --lr 1e-3 \
+    --lr 5e-4 \
     --seq-len 10000 \
     --d-lambda 1e-2 \
     --expName ${EXP} \
