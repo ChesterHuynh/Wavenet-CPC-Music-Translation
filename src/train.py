@@ -86,7 +86,7 @@ class Trainer:
                     for p in self.decoders[i].parameters():
                         p.requires_grad = False
                     # XXX: unfreeze the last layer
-                    self.decoders[i].logits = torch.nn.Conv1d(self.skip_channels, self.classes, kernel_size=1)
+                    self.decoders[i].logits = torch.nn.Conv1d(args.skip_channels, self.classes, kernel_size=1)
                 if self.start_epoch != 264:
                     self.discriminator.load_state_dict(states[0]['discriminator_state'])
             
