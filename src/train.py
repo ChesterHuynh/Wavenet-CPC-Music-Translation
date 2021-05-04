@@ -85,8 +85,11 @@ class Trainer:
                     # XXX: comment requires_grad lines if training these layers
                     for p in self.decoders[i].parameters():
                         p.requires_grad = False
-                    # XXX: unfreeze the last layer
-                    self.decoders[i].logits = torch.nn.Conv1d(args.skip_channels, self.classes, kernel_size=1)
+                    for name, p in self.decoders[i].named_parameters():
+                        if name == "logits":
+                            p.requires_grad = True
+                    for p in self.decoders[i].parameters():
+                        print(p.requires_grad)
                 if self.start_epoch != 264:
                     self.discriminator.load_state_dict(states[0]['discriminator_state'])
             
