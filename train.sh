@@ -11,10 +11,10 @@ python3.7 ${CODE}/train.py \
            ${DATA}/Solo_Violin \
            ${DATA}/Beethoven_Solo_Piano \
     --model-name $1 \
-    --epochs 1 \
-    --batch-size 1 \
+    --epochs 100 \
+    --batch-size 8 \
     --lr-decay 0.995 \
-    --epoch-len 1 \
+    --epoch-len 1000 \
     --num-workers 0 \
     --lr 1e-3 \
     --seq-len 10000 \

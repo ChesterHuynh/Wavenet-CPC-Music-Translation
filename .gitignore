@@ -80,6 +80,12 @@ target/
 # exclude data from source control by default
 /data/
 
+# exclude checkpoints
+/checkpoints/
+
+# exclude results
+/results/
+
 # Mac OS-specific storage files
 .DS_Store
 
