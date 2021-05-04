@@ -243,6 +243,7 @@ class Trainer:
 
         recon_loss = cross_entropy_loss(y, x)
         self.losses_recon[dset_num].add(recon_loss.data.cpu().numpy().mean())
+        self.losses_nce[dset_num].add(nce_loss.data.cpu().numpy().mean())
 
         loss = (recon_loss.mean() + self.args.d_lambda * discriminator_wrong) + nce_loss
 
@@ -413,11 +414,11 @@ class Trainer:
         return ', '.join('{:.4f}'.format(x) for x in losses)
 
     def train_losses(self):
-        meters = [*self.losses_recon, self.loss_d_right]
+        meters = [*self.losses_recon, *self.losses_nce, self.loss_d_right]
         return self.format_losses(meters)
 
     def eval_losses(self):
-        meters = [*self.evals_recon, self.eval_d_right]
+        meters = [*self.evals_recon, *self.losses_nce, self.eval_d_right]
         return self.format_losses(meters)
 
     def train(self):
