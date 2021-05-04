@@ -21,7 +21,7 @@ from src.models.wavenet import WaveNet
 from src.models.wavenet_generator import WavenetGenerator
 from src.models.nv_wavenet_generator import NVWavenetGenerator
 
-from src.models.cpc import CPCEncoder
+from src.models.cpc import CPC 
 
 
 def extract_id(path):
@@ -40,7 +40,7 @@ def generate(args):
     if args.model_name == 'umt':
         encoder = wavenet_models.Encoder(model_args)
     else:
-        encoder = CPCEncoder(model_args)
+        encoder = CPC(model_args)
     encoder.load_state_dict(torch.load(checkpoints[0])['encoder_state'])
     encoder.eval()
     encoder = encoder.cuda()
