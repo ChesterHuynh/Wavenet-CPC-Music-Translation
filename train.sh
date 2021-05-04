@@ -3,7 +3,7 @@ set -e -x
 
 CODE=src
 DATA=data/musicnet/preprocessed
-EXP=musicnet
+EXP=umtcpc-pretrained
 export MASTER_PORT=29500
 
 python3.7 ${CODE}/train.py \
@@ -11,7 +11,7 @@ python3.7 ${CODE}/train.py \
            ${DATA}/Solo_Violin \
            ${DATA}/Beethoven_Solo_Piano \
     --model-name $1 \
-    --checkpoint "/home/ChesterHuynh/Wavenet-CPC-Music-Translation/checkpoints/umtcpc-pretrained/lastmodel" \
+    --checkpoint "/home/ChesterHuynh/Wavenet-CPC-Music-Translation/checkpoints/${EXP}/lastmodel" \
     --epochs 10000 \
     --batch-size 8 \
     --lr-decay 0.995 \
