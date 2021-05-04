@@ -11,7 +11,7 @@ python3.7 ${CODE}/train.py \
            ${DATA}/Solo_Violin \
            ${DATA}/Beethoven_Solo_Piano \
     --model-name $1 \
-    --checkpoint "/home/ChesterHuynh/Wavenet-CPC-Music-Translation/checkpoints/${EXP}/lastmodel" \
+    --checkpoint "checkpoints/${EXP}/lastmodel" \
     --epochs 10000 \
     --batch-size 8 \
     --lr-decay 0.995 \

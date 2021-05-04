@@ -85,6 +85,8 @@ class Trainer:
                     # XXX: comment requires_grad lines if training these layers
                     for p in self.decoders[i].parameters():
                         p.requires_grad = False
+                    # XXX: unfreeze the last layer
+                    self.decoders[i].logits = nn.Conv1d(self.skip_channels, self.classes, kernel_size=1)
                 if self.start_epoch != 264:
                     self.discriminator.load_state_dict(states[0]['discriminator_state'])
             
