@@ -148,7 +148,7 @@ def main():
                         help='Type of model architecture')
     parser.add_argument('--files', type=Path, nargs='+', required=False,
                         help='Top level directories of input music files')
-    parser.add_argument('-o', '--output', type=Path,
+    parser.add_argument('-og', '--output-generated', type=Path,
                         help='Output directory for output files')
     parser.add_argument('--checkpoint', type=Path, required=True,
                         help='Checkpoint path')
