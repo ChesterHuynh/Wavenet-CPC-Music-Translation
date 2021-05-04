@@ -5,8 +5,8 @@ import os
 
 
 if __name__ == "__main__":
-    src = Path("../checkpoints/pretrained_musicnet/")
-    dst = Path("/home/magjywang/checkpoints/umtcpc-pretrained")
+    src = Path("../checkpoints/pretrained_musicnet")
+    dst = Path("/home/magjywang/Wavenet-CPC-Music-Translation/checkpoints/umtcpc-pretrained")
     data_dir = Path("/home/magjywang/Wavenet-CPC-Music-Translation/data/musicnet/preprocessed")
     
     if not os.path.exists(dst):
@@ -30,12 +30,15 @@ if __name__ == "__main__":
 
     torch.save(chkpt_args, dst / "args.pth")
 
+    # Bach Solo Cello --> Solo Cello
     copyfile(src / "lastmodel_0.pth", dst / "lastmodel_0.pth")
     copyfile(src / "bestmodel_0.pth", dst / "bestmodel_0.pth")
 
+    # Beethoven Accompanied Violin --> Solo Violin
     copyfile(src / "lastmodel_4.pth", dst / "lastmodel_1.pth")
     copyfile(src / "bestmodel_4.pth", dst / "bestmodel_1.pth")
 
+    # Beethoven Solo Piano --> Beethoven Solo Piano
     copyfile(src / "lastmodel_1.pth", dst / "lastmodel_2.pth")
     copyfile(src / "bestmodel_1.pth", dst / "bestmodel_2.pth")
 
