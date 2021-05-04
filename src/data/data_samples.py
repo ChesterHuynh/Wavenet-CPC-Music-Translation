@@ -34,7 +34,7 @@ def sample(args):
         for i in tqdm.trange(args.n):
             wav_data, _ = dataset[0]
             wav_data = inv_mu_law(wav_data.numpy())
-            save_audio(wav_data, args.output / f'{dataset_id}/{i}.wav', rate=data.EncodedFilesDataset.WAV_FREQ)
+            save_audio(wav_data, args.output_sampled / f'{dataset_id}/{i}.wav', rate=data.EncodedFilesDataset.WAV_FREQ)
 
 def main():
     parser = argparse.ArgumentParser()

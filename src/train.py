@@ -24,7 +24,7 @@ import re
 from src.data.data import DatasetSet
 from src.models.wavenet import WaveNet
 from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
-from src.models.cpc import CPCEncoder, InfoNCELoss
+from src.models.cpc import CPC, InfoNCELoss
 from src.data.utils import create_output_dir, LossMeter, wrap
 
 
@@ -55,7 +55,7 @@ class Trainer:
         if args.model_name == 'UMT':
             self.encoder = Encoder(args)
         else:
-            self.encoder = CPCEncoder(args)
+            self.encoder = CPC(args)
 
         self.discriminator = ZDiscriminator(args)
 
@@ -135,16 +135,10 @@ class Trainer:
                 self.lr_managers[i].last_epoch = self.start_epoch
                 self.lr_managers[i].step()
     
-    def init_hidden(self, use_gpu=True):
-        if use_gpu: return torch.zeros(1, self.args.batch_size, self.args.latent_d).cuda()
-        else: return torch.zeros(1, self.args.batch_size, self.args.latent_d)
-
     def eval_batch_cpc(self, x, x_aug, dset_num):
         x, x_aug = x.float(), x_aug.float()
 
-        hidden = self.init_hidden()
-
-        c, hidden, encode_samples, pred = self.encoder(x, hidden)
+        z, c = self.encoder(x)
         ## BUGFIX decoder ##
         if self.args.distributed:
             y = self.decoder(x, c)
@@ -163,7 +157,8 @@ class Trainer:
         recon_loss = cross_entropy_loss(y, x)
         self.evals_recon[dset_num].add(recon_loss.data.cpu().numpy().mean())
 
-        nce_loss = InfoNCELoss(encode_samples, pred, self.args.timestep)
+        nce_loss_metric = InfoNCELoss(self.args)
+        nce_loss = nce_loss_metric(z, c, self.args.n_replicates)
         self.evals_nce[dset_num].add(nce_loss.data.cpu().numpy())
 
         total_loss = discriminator_right.data.item() * self.args.d_lambda + \
@@ -206,16 +201,15 @@ class Trainer:
     def train_batch_cpc(self, x, x_aug, dset_num):
         x, x_aug = x.float(), x_aug.float()
 
-        hidden = self.init_hidden()
-
         # Optimize D - discriminator right
-        c, _, encoder_samples, pred = self.encoder(x, hidden)
+        z, c = self.encoder(x)
         c_logits = self.discriminator(c)
         discriminator_right = F.cross_entropy(c_logits, torch.tensor([dset_num] * x.size(0)).long().cuda()).mean()
         self.loss_d_right.add(discriminator_right.data.cpu())
 
         # Get c_t for computing InfoNCE Loss
-        nce_loss = InfoNCELoss(encoder_samples, pred, self.args.timestep)
+        nce_loss_metric = InfoNCELoss(self.args)
+        nce_loss = nce_loss_metric(z, c, self.args.n_replicates)
         loss = discriminator_right * self.args.d_lambda + nce_loss
         self.d_optimizer.zero_grad()
         loss.backward()
@@ -225,7 +219,7 @@ class Trainer:
         self.d_optimizer.step()
 
         # optimize G - reconstructs well, discriminator wrong
-        c, _, encoder_samples, pred = self.encoder(x_aug, hidden)
+        z, c = self.encoder(x_aug)
         if self.args.distributed:
             y = self.decoder(x, c)
         else:
@@ -237,8 +231,8 @@ class Trainer:
             self.logger.debug(f'c_logits: {c_logits.detach().cpu().numpy()}')
             self.logger.debug(f'dset_num: {dset_num}')
 
-        nce_loss = InfoNCELoss(encoder_samples, pred, self.args.timestep)
-        self.losses_nce[dset_num].add(nce_loss.data.cpu().numpy())
+        nce_loss_metric = InfoNCELoss(self.args)
+        nce_loss = nce_loss_metric(z, c, self.args.n_replicates)
 
         recon_loss = cross_entropy_loss(y, x)
         self.losses_recon[dset_num].add(recon_loss.data.cpu().numpy().mean())
@@ -531,7 +525,8 @@ def main():
     
     # Encoder options
     
-    parser.add_argument('--timestep', type=int, default=1, help='Number of steps to predict ahead in CPC')
+    parser.add_argument('--prediction-step', type=int, default=5, help='Number of steps to predict ahead in CPC')
+    parser.add_argument('--n-replicates', type=int, default=5, help='Number of negative sampling replicates')
     parser.add_argument('--latent-d', type=int, default=128,
     help='Latent size')
     parser.add_argument('--repeat-num', type=int, default=6,

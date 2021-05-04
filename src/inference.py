@@ -5,6 +5,8 @@ from src.data.data_samples import sample
 from src.data.run_on_files import generate
 
 if __name__ == "__main__":
+    import argparse
+    from pathlib import Path
 
     # For sampling
     parser = argparse.ArgumentParser()
@@ -19,6 +21,8 @@ if __name__ == "__main__":
     parser.add_argument('--seq-len', type=int, default=80000)
 
     # For generation
+    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc'],
+                        help='Type of architecture (UMT or UMTCPC)')
     parser.add_argument('--files', type=Path, nargs='+', required=False,
                         help='Top level directories of input music files')
     parser.add_argument('-og', '--output-generated', type=Path,

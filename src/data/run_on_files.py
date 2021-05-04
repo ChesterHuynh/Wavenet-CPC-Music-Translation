@@ -21,6 +21,7 @@ from src.models.wavenet import WaveNet
 from src.models.wavenet_generator import WavenetGenerator
 from src.models.nv_wavenet_generator import NVWavenetGenerator
 
+from src.models.cpc import CPCEncoder
 
 
 def extract_id(path):
@@ -36,11 +37,18 @@ def generate(args):
     assert len(checkpoints) >= 1, "No checkpoints found."
 
     model_args = torch.load(args.checkpoint.parent / 'args.pth')[0]
-    encoder = wavenet_models.Encoder(model_args)
+    if args.model_name == 'umt':
+        encoder = wavenet_models.Encoder(model_args)
+    else:
+        encoder = CPCEncoder(model_args)
     encoder.load_state_dict(torch.load(checkpoints[0])['encoder_state'])
     encoder.eval()
     encoder = encoder.cuda()
 
+    def init_hidden(size, use_gpu=True):
+        if use_gpu: return torch.zeros(1, size, model_args.latent_d).cuda()
+        else: return torch.zeros(1, size, model_args.latent_d)
+    
     decoders = []
     decoder_ids = []
     for checkpoint in checkpoints:
@@ -57,7 +65,7 @@ def generate(args):
         decoder_ids += [extract_id(checkpoint)]
 
     xs = []
-    assert args.output_next_to_orig ^ (args.output is not None)
+    assert args.output_next_to_orig ^ (args.output_generated is not None)
 
     if len(args.files) == 1 and args.files[0].is_dir():
         top = args.files[0]
@@ -105,16 +113,18 @@ def generate(args):
     with torch.no_grad():
         zz = []
         for xs_batch in torch.split(xs, args.batch_size):
-            zz += [encoder(xs_batch)]
-        #zz = torch.cat(zz, dim=0) TODO: bring this line back once context vectors have consistent dims
+            if args.model_name == 'umt':
+                output = encoder(xs_batch)
+            else:
+                _, output = encoder(xs_batch)
+            zz += [output]
+        zz = torch.cat(zz, dim=0)
 
         with utils.timeit("Generation timer"):
             for i, decoder_id in enumerate(decoder_ids):
                 yy[decoder_id] = []
                 decoder = decoders[i]
-                #for zz_batch in torch.split(zz, args.batch_size):
-                # TODO: avoid using hack for inconsistent dimensions in context vectors
-                for zz_batch in zz:
+                for zz_batch in torch.split(zz, args.batch_size):
                     print(zz_batch.shape)
                     splits = torch.split(zz_batch, args.split_size, -1)
                     audio_data = []
@@ -133,6 +143,9 @@ def generate(args):
 
 def main():
     parser = ArgumentParser()
+    
+    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc'],
+                        help='Type of model architecture')
     parser.add_argument('--files', type=Path, nargs='+', required=False,
                         help='Top level directories of input music files')
     parser.add_argument('-o', '--output', type=Path,
