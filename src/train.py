@@ -26,8 +26,6 @@ from src.models.wavenet import WaveNet
 from src.models.wavenet_models import cross_entropy_loss, Encoder, ZDiscriminator
 from src.models.cpc import CPC, InfoNCELoss
 from src.data.utils import create_output_dir, LossMeter, wrap
-from torch import nn
-
 
 class Trainer:
     def __init__(self, args):
@@ -69,8 +67,6 @@ class Trainer:
             checkpoint_args = torch.load(checkpoint_args_path)
 
             self.start_epoch = checkpoint_args[-1] + 1
-            if self.start_epoch == 264:
-                self.discriminator.convs[-1] = nn.Conv1d(args.d_channels, 6, 1)
             if args.distributed:
                 states = torch.load(args.checkpoint)
             else:
@@ -89,13 +85,9 @@ class Trainer:
                     # XXX: comment requires_grad lines if training these layers
                     for p in self.decoders[i].parameters():
                         p.requires_grad = False
-                self.discriminator.load_state_dict(states[0]['discriminator_state'])
-                
-                # XXX: comment requires_grad lines if training these layers
-                for p in self.discriminator.parameters():
-                    p.requires_grad = False
-                if self.start_epoch == 264:
-                    self.discriminator.convs[-1] = nn.Conv1d(args.d_channels, self.n_classes, 1)
+                if self.start_epoch != 264:
+                    self.discriminator.load_state_dict(states[0]['discriminator_state'])
+            
 
             self.logger.info('Loaded checkpoint parameters')
         else:
