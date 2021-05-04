@@ -84,8 +84,8 @@ class Trainer:
 
                     # XXX: comment requires_grad lines if training these layers
                     for name, p in self.decoders[i].named_parameters():
-                        if "logits" in name:
-                            continue
+                        # if "logits" in name:
+                        #     continue
                         p.requires_grad = False
                 if self.start_epoch != 264:
                     self.discriminator.load_state_dict(states[0]['discriminator_state'])
