@@ -81,7 +81,8 @@ class Trainer:
                 self.decoder.load_state_dict(states['decoder_state'])
                 self.discriminator.load_state_dict(states['discriminator_state'])
             else:
-                self.encoder.load_state_dict(states[0]['encoder_state'])
+                if self.start_epoch != 264:
+                    self.encoder.load_state_dict(states[0]['encoder_state'])
                 for i in range(self.args.n_datasets):
                     self.decoders[i].load_state_dict(states[i]['decoder_state'])
 
