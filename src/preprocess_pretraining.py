@@ -7,7 +7,7 @@ import os
 if __name__ == "__main__":
     repo_path = Path(__file__).parents[1]
     src = repo_path / "checkpoints/pretrained_musicnet"
-    dst = repo_path / "checkpoints/umtcpc-pretrained"
+    dst = repo_path / "checkpoints/umtcpc-wavenet-pretrained"
     data_dir = repo_path / "data/musicnet/preprocessed"
     
     if not os.path.exists(dst):
