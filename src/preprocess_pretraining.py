@@ -5,9 +5,10 @@ import os
 
 
 if __name__ == "__main__":
-    src = Path("../checkpoints/pretrained_musicnet")
-    dst = Path("/home/magjywang/Wavenet-CPC-Music-Translation/checkpoints/umtcpc-pretrained")
-    data_dir = Path("/home/magjywang/Wavenet-CPC-Music-Translation/data/musicnet/preprocessed")
+    repo_path = Path(__file__).parents[1]
+    src = repo_path / "checkpoints/pretrained_musicnet"
+    dst = repo_path / "checkpoints/umtcpc-pretrained"
+    data_dir = repo_path / "data/musicnet/preprocessed"
     
     if not os.path.exists(dst):
         os.makedirs(dst)
