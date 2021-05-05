@@ -23,6 +23,7 @@ if __name__ == "__main__":
                         data_dir / "Beethoven_Solo_Piano"]
     chkpt_args[0].distributed = False
     chkpt_args[0].expName = "umtcpc-pretrained"
+    chkpt_args[0].encoder_pool = 1
     chkpt_args[0].lr = 5e-4
     chkpt_args[0].n_datasets = 3
     chkpt_args[0].num_workers = 0
