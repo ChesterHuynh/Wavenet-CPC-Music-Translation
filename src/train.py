@@ -90,7 +90,6 @@ class Trainer:
                         p.requires_grad = False
                 if self.start_epoch != 264:
                     self.discriminator.load_state_dict(states[0]['discriminator_state'])
-            
 
             self.logger.info('Loaded checkpoint parameters')
         else:
@@ -365,6 +364,7 @@ class Trainer:
                 else:
                     batch_loss = self.train_batch_cpc(x, x_aug, dset_num)
 
+                self.logger.info(f'Train (loss: {batch_loss:.2f}) epoch {epoch}')
                 train_enum.set_description(f'Train (loss: {batch_loss:.2f}) epoch {epoch}')
                 train_enum.update()
 
