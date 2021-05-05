@@ -44,7 +44,7 @@ class CPC(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv1d(512, 512, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm1d(512),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
             nn.Conv1d(512, 1, kernel_size=1, stride=1,bias=False),
             nn.ReLU(inplace=True)
         )

@@ -5,9 +5,10 @@ import os
 
 
 if __name__ == "__main__":
-    src = Path("../checkpoints/pretrained_musicnet")
-    dst = Path("/home/magjywang/Wavenet-CPC-Music-Translation/checkpoints/umtcpc-pretrained")
-    data_dir = Path("/home/magjywang/Wavenet-CPC-Music-Translation/data/musicnet/preprocessed")
+    repo_path = Path(__file__).parents[1]
+    src = repo_path / "checkpoints/pretrained_musicnet"
+    dst = repo_path / "checkpoints/umtcpc-wavenet-pretrained"
+    data_dir = repo_path / "data/musicnet/preprocessed"
     
     if not os.path.exists(dst):
         os.makedirs(dst)
@@ -22,6 +23,7 @@ if __name__ == "__main__":
                         data_dir / "Beethoven_Solo_Piano"]
     chkpt_args[0].distributed = False
     chkpt_args[0].expName = "umtcpc-pretrained"
+    chkpt_args[0].encoder_pool = 1
     chkpt_args[0].lr = 5e-4
     chkpt_args[0].n_datasets = 3
     chkpt_args[0].num_workers = 0

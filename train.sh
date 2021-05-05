@@ -24,6 +24,6 @@ python3.7 ${CODE}/train.py \
     --latent-d 64 \
     --layers 14 \
     --blocks 4 \
-    --encoder_pool 1 \
+    --encoder-pool 1 \
     --data-aug \
     --grad-clip 1
