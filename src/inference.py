@@ -8,8 +8,10 @@ if __name__ == "__main__":
     import argparse
     from pathlib import Path
 
-    # For sampling
     parser = argparse.ArgumentParser()
+    parser.add_argument('--sample', action='store_true', help='Create data samples as inpu')
+
+    # For sampling
     parser.add_argument('--data', type=Path, nargs='*',
                         help='Path to data dir')
     parser.add_argument('--data-from-args', type=Path,
@@ -45,9 +47,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    
     # Sample data
-    print("Sampling")
-    sample(args)
+    if args.sample:
+        print("Sampling")
+        sample(args)
 
     # Generate translated samples
     print("Generating")
