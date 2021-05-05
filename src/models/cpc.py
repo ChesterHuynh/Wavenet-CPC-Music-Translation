@@ -6,22 +6,26 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import math
 
+from src.models.wavenet_models import Encoder
+
 # PyTorch implementation of CPC 
-# Paper reference: 'Representation Learning with Contrastive Predictive Coding'
-# Source code reference: https://github.com/jefflai108/Contrastive-Predictive-Coding-PyTorch
 
 class CPC(nn.Module):
     """
     Creates a contrastive predictive coding model with a strided convolutional 
-    encoder and GRU RNN autoregressor as described by [1] and implemented in [2].
+    encoder and a WaveNet-like autoregressor as described by [1], [2] and implemented in [3], [4].
 
     References
     ----------
     [1] van der Oord et al., "Representation Learning with Contrastive 
         Predictive Coding", arXiv, 2019.
         https://arxiv.org/abs/1807.03748
-    [2] Lai, "Contrastive-Predictive-Coding-PyTorch", GitHub.
+    [2] Engel et al., "Neural Audio Synthesis of Musical Notes with WaveNet Autoencoders",
+        https://arxiv.org/pdf/1704.01279.pdf, 2017.
+    [3] Lai, "Contrastive-Predictive-Coding-PyTorch", GitHub.
         https://github.com/jefflai108/Contrastive-Predictive-Coding-PyTorch
+    [4] Polyak, "music-translation", GitHub.
+        https://github.com/facebookresearch/music-translation
     """
     def __init__(self, args):
         super().__init__()
@@ -41,8 +45,10 @@ class CPC(nn.Module):
             nn.Conv1d(512, 512, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True)
+            nn.Conv1d(512, 1, kernel_size=1, stride=1,bias=False),
+            nn.ReLU(inplace=True)
         )
-        self.ar = nn.GRU(512, args.latent_d, num_layers=1, bidirectional=False, batch_first=True)
+        self.ar = Encoder(args) 
 
     def forward(self, x):
         """
@@ -53,9 +59,9 @@ class CPC(nn.Module):
 
         Returns
         -------
-            z : B x (L // 160) x 512 torch.Tensor
+            z : B x (L // 160) x 1 torch.Tensor
                 Encoded representation of audio sequence with 512 channels.
-            c : B x (L // 160) x 256 torch.Tensor
+            c : B x (L // 160) x 1 torch.Tensor
                 Context-encoded representation of audio sequence with 256 channels.
         """
         x = x / 255 - .5
@@ -64,11 +70,11 @@ class CPC(nn.Module):
 
         # Use encoder to get sequence of latent representations z_t
         z = self.encoder(x)
-        z = z.transpose(1,2)
 
         # Use autoregressive model to compute context latent representation c_t
-        c, _ = self.ar(z)
-        c = c.transpose(1, 2)
+        c = self.ar(z)
+        
+        z = z.transpose(1, 2)
 
         return z, c
 
@@ -92,14 +98,14 @@ class InfoNCELoss(nn.Module):
         super().__init__()
         self.prediction_step = args.prediction_step
         self.Wk = nn.ModuleList(
-            nn.Linear(args.latent_d, 512) for _ in range(self.prediction_step)
+            nn.Linear(args.latent_d, 1) for _ in range(self.prediction_step)
         )
 
     def get_neg_z(self, z, k, t, n_replicates):
         """
         Parameters
         ----------
-            z : B x L x 512 torch.Tensor
+            z : B x L x 1 torch.Tensor
                 Encoded representation of audio sequence.
             k : int
                 Number of time steps in the future for prediction
@@ -110,7 +116,7 @@ class InfoNCELoss(nn.Module):
 
         Returns
         -------
-            neg_samples : B x L-1 x N_rep x 512 torch.Tensor
+            neg_samples : B x L-1 x N_rep x 1 torch.Tensor
                 Batch-wise average InfoNCE loss
         """
         cur_device = z.get_device() if z.get_device() != -1 else "cpu"
@@ -135,9 +141,9 @@ class InfoNCELoss(nn.Module):
         """
         Parameters
         ----------
-            z : B x L x 512 torch.Tensor
+            z : B x L x 1 torch.Tensor
                 Encoded representation of audio sequence.
-            c : B x L x 256 torch.Tensor
+            c : B x L x 1 torch.Tensor
                 Context-encoded representation of audio sequence.
             n_replicates : int
                 Number of times to make a set of negative samples.
@@ -157,7 +163,7 @@ class InfoNCELoss(nn.Module):
 
         # Get context vector c_t
         c = c.transpose(1, 2)
-        c_t = c[torch.arange(n_batches), t] # B x 256
+        c_t = c[torch.arange(n_batches), t] # B x 1 
 
         self.Wk.to(cur_device)
         for k in range(1, self.prediction_step + 1):
@@ -165,7 +171,7 @@ class InfoNCELoss(nn.Module):
             neg_samples = self.get_neg_z(z, k, t, n_replicates)  # B x L-1 x N_rep x C
 
             # Compute W_k * c_t
-            linear = self.Wk[k - 1]  # 256 x C
+            linear = self.Wk[k - 1]  # 1 x C
             pred = linear(c_t) # B x C
 
             # Get positive z_t+k sample

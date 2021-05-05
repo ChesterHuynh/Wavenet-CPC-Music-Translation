@@ -3,7 +3,7 @@ set -e -x
 
 CODE=src
 DATA=data/musicnet/preprocessed
-EXP=umtcpc-pretrained
+EXP=umtcpc-wavenet-pretrained
 export MASTER_PORT=29500
 
 python3.7 ${CODE}/train.py \
@@ -24,5 +24,6 @@ python3.7 ${CODE}/train.py \
     --latent-d 64 \
     --layers 14 \
     --blocks 4 \
+    --encoder_pool 1 \
     --data-aug \
     --grad-clip 1
