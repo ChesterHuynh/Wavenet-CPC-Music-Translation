@@ -406,6 +406,7 @@ class Trainer:
                 else:
                     batch_loss = self.eval_batch_cpc(x, x_aug, dset_num)
                 
+                self.logger.info(f'Test (loss: {batch_loss:.2f}) epoch {epoch}')
                 valid_enum.set_description(f'Test (loss: {batch_loss:.2f}) epoch {epoch}')
                 valid_enum.update()
 
