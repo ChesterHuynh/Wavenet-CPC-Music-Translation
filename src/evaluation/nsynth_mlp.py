@@ -20,27 +20,35 @@ class NSynthDatasetCoQT(Dataset):
 
     Parameters
     ----------
-    data: paths to directory domain directories split into train, test, val
+    data (Path): paths to directory domain directories split into train, test, val
     domains: names of domains to use in classification
-    op: "train", "test", or "val"
+    op (str): "train", "test", or "val"
+    translated (Boolean): true if samples are translated 
     """
-    def __init__(self, data, op):
+    def __init__(self, data, op, translated):
         self.op = op
         self.data = data
+        self.translated = translated
         self.filenames = []
-        for d in data:
-            self.filenames += glob.glob(f'{d}/{op}/*.npy')
+        if translated:
+            for d in data:
+                self.filenames += glob.glob(f'{d}/{op}/*_[0-9]_*.npy')
+        else:
+            for d in data:
+                self.filenames += glob.glob(f'{d}/{op}/*.npy')
+        print(self.filenames)
 
     def __len__(self):
         return len(self.filenames)
 
     def __getitem__(self, idx):
         fname = self.filenames[idx]
-        label = np.zeros(len(self.data))
-        for i, c in enumerate(self.data):
-            if str(c) in fname:
-                label[i] = 1
-        label = np.argmax(label)
+        if self.translated:
+            label = fname.split('_')[-2]
+        else:
+            for i, c in enumerate(self.data):
+                if str(c) in fname:
+                    label = i
         cqt_data = np.load(fname, allow_pickle=True)
         cqt_data = torch.tensor(np.abs(cqt_data), dtype=torch.float32)
         label = torch.tensor(label, dtype=int)
@@ -69,11 +77,11 @@ class NSynthClassifier(nn.Module):
 class Trainer():
     def __init__(self, args):
         self.epochs = args.epochs
-        trainset = NSynthDatasetCoQT(args.data, 'train')
+        trainset = NSynthDatasetCoQT(args.data, 'train', args.translated)
         self.trainloader = DataLoader(trainset, batch_size=args.batch_size, shuffle=True)
-        valset = NSynthDatasetCoQT(args.data, 'val')
+        valset = NSynthDatasetCoQT(args.data, 'val', args.translated)
         self.valloader = DataLoader(valset, batch_size=args.batch_size, shuffle=True)
-        testset = NSynthDatasetCoQT(args.data, 'test')
+        testset = NSynthDatasetCoQT(args.data, 'test', args.translated)
         self.testloader = DataLoader(testset, batch_size=args.batch_size, shuffle=True)
 
         self.dataloaders = {'train': self.trainloader, 'val': self.valloader, 'test': self.testloader}
@@ -159,7 +167,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=8, help='Number of samples per batch')
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
     parser.add_argument('--input-dim', type=int, default=14532, help='Input dimension')
-
+    parser.add_argument('--translated', action='store_true', help='Indicates samples are translated')
     args = parser.parse_args()
 
     t = Trainer(args)
