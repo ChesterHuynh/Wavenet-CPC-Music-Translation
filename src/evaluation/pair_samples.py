@@ -1,7 +1,9 @@
 import os
 import shutil
+import argpause
 
 def pair_samples(root):
+    root = str(root)
     path = root + '/nsynth/parsed/'
     out = root + '/paired/'
 
