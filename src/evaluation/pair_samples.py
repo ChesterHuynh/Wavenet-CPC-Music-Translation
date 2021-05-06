@@ -1,6 +1,7 @@
 import os
 import shutil
-import argpause
+import argparse
+from pathlib import Path
 
 def pair_samples(root):
     root = str(root)
@@ -16,10 +17,10 @@ def pair_samples(root):
         for i in t_kb:
             if j[20:23] == i[22:25]:
                 out_pitch = out + j[20:23]
-            if not os.path.exists(out_pitch):
-                os.makedirs(out_pitch)
-            shutil.copyfile(folder_string + j, out_pitch + '/' + j)
-            shutil.copyfile(folder_kb + i, out_pitch + '/' + i)
+                if not os.path.exists(out_pitch):
+                    os.makedirs(out_pitch)
+                shutil.copyfile(folder_string + j, out_pitch + '/' + j)
+                shutil.copyfile(folder_kb + i, out_pitch + '/' + i)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NSynth Pitch Pairing')
