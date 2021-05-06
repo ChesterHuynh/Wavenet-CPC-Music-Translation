@@ -9,7 +9,6 @@ if __name__ == "__main__":
     from pathlib import Path
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sample', action='store_true', help='Create data samples as inpu')
 
     # For sampling
     parser.add_argument('--data', type=Path, nargs='*',

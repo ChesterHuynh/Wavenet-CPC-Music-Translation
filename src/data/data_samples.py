@@ -42,7 +42,7 @@ def main():
                         help='Path to data dir')
     parser.add_argument('--data-from-args', type=Path,
                         help='Path to args.pth')
-    parser.add_argument('--output', '-o', type=Path,
+    parser.add_argument('--output-sampled', '-os', type=Path,
                         help='Output path')
     parser.add_argument('-n', type=int,
                         help='Num samples to make')
