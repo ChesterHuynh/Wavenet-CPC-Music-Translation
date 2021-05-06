@@ -11,5 +11,5 @@ CODE=src
 OUTPUT=results/${DATE}/$1
 
 python3.7 ${CODE}/inference.py --model-name $3 --data-from-args checkpoints/$1/args.pth --output-sampled ${OUTPUT}-py  -n 2 \
-    --files ${OUTPUT}-py --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --decoders $2 --sample-len 80000 --py
+    --files ${OUTPUT}-py --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --decoders $2 --sample-len 80000 --py --skip-filter
 

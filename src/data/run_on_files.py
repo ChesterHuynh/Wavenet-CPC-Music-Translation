@@ -107,7 +107,7 @@ def generate(args):
         if args.output_next_to_orig:
             save_audio(wav.squeeze(), filepath.parent / f'{filepath.stem}_{decoder_ix}.wav', rate=args.rate)
         else:
-            save_audio(wav.squeeze(), args.output / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
+            save_audio(wav.squeeze(), args.output_generated / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
 
     yy = {}
     with torch.no_grad():

@@ -14,5 +14,4 @@
 DATE=`date +%d_%m_%Y`
 CODE=src
 
-python3.7 ${CODE}/data/run_on_files.py  --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --files $2 --decoders $3 --model-name $4 --sample-len 80000
-
+python3.7 ${CODE}/data/run_on_files.py  --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --files $2 --decoders $3 --model-name $4 --sample-len 80000 --skip-filter
