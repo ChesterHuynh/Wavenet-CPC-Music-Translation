@@ -56,10 +56,15 @@ def generate(args):
         decoder.load_state_dict(torch.load(checkpoint)['decoder_state'])
         decoder.eval()
         decoder = decoder.cuda()
+        
         if args.py:
-            decoder = WavenetGenerator(decoder, args.batch_size, wav_freq=args.rate)
+            if args.model_name == 'umt':
+                cond_repeat = 800
+            else:
+                cond_repeat = 160
+            decoder = WavenetGenerator(decoder, args.batch_size, wav_freq=args.rate, cond_repeat=cond_repeat)
         else:
-            decoder = NVWavenetGenerator(decoder, args.rate * (args.split_size // 20), args.batch_size, 3)
+            decoder = NVWavenetGenerator(decoder, args.rate * (args.split_size // 20), args.batch_size, 0)
 
         decoders += [decoder]
         decoder_ids += [extract_id(checkpoint)]
@@ -99,15 +104,15 @@ def generate(args):
     xs = torch.stack(xs).contiguous()
     print(f'xs size: {xs.size()}')
 
-    def save(x, decoder_ix, filepath):
+    def save(x, decoder_ix, filepath, model_name):
         wav = utils.inv_mu_law(x.cpu().numpy())
         print(f'X size: {x.shape}')
         print(f'X min: {x.min()}, max: {x.max()}')
 
         if args.output_next_to_orig:
-            save_audio(wav.squeeze(), filepath.parent / f'{filepath.stem}_{decoder_ix}.wav', rate=args.rate)
+            save_audio(wav.squeeze(), filepath.parent / f'{filepath.stem}_{decoder_ix}_{model_name}.wav', rate=args.rate)
         else:
-            save_audio(wav.squeeze(), args.output / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
+            save_audio(wav.squeeze(), args.output_generated / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
 
     yy = {}
     with torch.no_grad():
@@ -124,8 +129,9 @@ def generate(args):
             for i, decoder_id in enumerate(decoder_ids):
                 yy[decoder_id] = []
                 decoder = decoders[i]
+                #for xs_batch, zz_batch in zip(torch.split(xs, args.batch_size), torch.split(zz, args.batch_size)):
                 for zz_batch in torch.split(zz, args.batch_size):
-                    print(zz_batch.shape)
+                    print(zz_batch.size())
                     splits = torch.split(zz_batch, args.split_size, -1)
                     audio_data = []
                     decoder.reset()
@@ -138,7 +144,7 @@ def generate(args):
 
     for decoder_ix, decoder_result in yy.items():
         for sample_result, filepath in zip(decoder_result, file_paths):
-            save(sample_result, decoder_ix, filepath)
+            save(sample_result, decoder_ix, filepath, args.model_name)
 
 
 def main():
