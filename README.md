@@ -23,7 +23,7 @@ Project Organization
     │   │   │
     │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
     │   │   │
@@ -39,7 +39,7 @@ Project Organization
     │   │   │
     │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
     │   │   │
@@ -55,7 +55,7 @@ Project Organization
     │   │   │
     │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
     │   │   │
