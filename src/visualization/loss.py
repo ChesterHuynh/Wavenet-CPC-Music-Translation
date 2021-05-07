@@ -8,12 +8,13 @@ from pathlib import Path
 from matplotlib import cycler
 
 from src.logparser import parse_epoch_loss, parse_batch_loss
-
 plt.rcParams.update({
     "axes.spines.right" : False,
     "axes.spines.top" : False,
-    "axes.labelsize" : "medium",
-    "axes.titlesize" : "x-large",
+    "axes.labelsize" : "x-large",
+    "axes.titlesize" : "xx-large",
+    "xtick.labelsize" : "large",
+    "ytick.labelsize" : "large",
     "font.size" : 10,
     "axes.prop_cycle": cycler(color=[
         "#0000FF",  # Blue
