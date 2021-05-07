@@ -64,8 +64,9 @@ Project Organization
     │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    │
     ├── shell              <- Shell scripts that invoke source code
-    |
+    │
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
