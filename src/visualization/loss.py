@@ -16,13 +16,13 @@ plt.rcParams.update({
     "axes.titlesize" : "x-large",
     "font.size" : 10,
     "axes.prop_cycle": cycler(color=[
-        "#348ABD",
-        "#A60628",
-        "#7A68A6",
-        "#467821",
-        "#CF4457",
-        "#188487",
-        "#E24A33"
+        "#0000FF",  # Blue
+        "#DC143C",  # Crimson
+        "#008000",  # Green
+        "#FFD700",  # Gold
+        "#FFA500",  # Orange
+        "#029386",  # Teal
+        "#9A0EEA",  # Violet
     ])
 })
 
@@ -44,7 +44,6 @@ def plot_batch_loss(fpath: Path, dst: Path):
     fig, ax = plt.subplots(dpi=100)
     sns.lineplot(data=train_losses_long, x='Epoch', y='Loss', label='Train loss', ax=ax)
     sns.lineplot(data=test_losses_long, x='Epoch', y='Loss', label='Test loss', ax=ax)
-    # ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', frameon=False)
     ax.legend(frameon=False)
     fig.tight_layout()
     
@@ -60,7 +59,6 @@ def plot_epoch_loss(fpath: Path, dst: Path):
     ax.plot(train_losses.sum(axis=1), label = "Train Loss")
     ax.plot(test_losses.sum(axis=1), label="Test Loss")
     ax.set(xlabel="Epoch", ylabel="Loss")
-    # ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', frameon=False)
     ax.legend(frameon=False)
     fig.tight_layout()
 
