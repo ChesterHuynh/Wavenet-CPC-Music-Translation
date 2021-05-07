@@ -17,6 +17,8 @@ import librosa
 
 from pathlib import Path
 
+from scipy.io import wavfile
+
 def download_nsynth(root):
     """Download NSynth data at root.
     Adapted from https://github.com/jthickstun/pytorch_musicnet
@@ -58,7 +60,7 @@ def download_nsynth(root):
         if call(["tar", "-xf", file_path, '-C', root, '--strip', '1']) != 0:
             raise OSError("Failed tarball extraction")
 
-def parse_nsynth(root, json_name):
+def parse_nsynth(root, domains, seq_len, json_name):
     df_json = pd.read_json(os.path.join(root, json_name))
 
     instr_str_strip = df_json.loc["instrument_str"].apply(lambda x: "_".join(x.split("_")[:2])).unique()
@@ -66,7 +68,9 @@ def parse_nsynth(root, json_name):
     parsed_dir = os.path.join(root, 'parsed')
     os.makedirs(parsed_dir, exist_ok=True)
 
+
     for instr_str in instr_str_strip:
+        if instr_str in domains:
             os.makedirs(os.path.join(parsed_dir, instr_str), exist_ok=True)
 
     filenames = glob.glob(os.path.join(root, "audio/*.wav"))
@@ -75,9 +79,17 @@ def parse_nsynth(root, json_name):
         family = df_json[fname_base].loc["instrument_family_str"]
         src = df_json[fname_base].loc["instrument_source_str"]
 
-        dst_dir = os.path.join(parsed_dir, "_".join([family, src]))
+        domain = "_".join([family,src])
 
-        copy(fname, dst_dir)
+        if domain in domains:
+            sr, audio = wavfile.read(fname)
+            audio_clip = audio[16000:16000 + seq_len]
+            
+            dst_fname = parsed_dir / Path(domain) / os.path.basename(fname)
+            
+            wavfile.write(dst_fname, sr, audio_clip)
+            #dst_dir = os.path.join(parsed_dir, domain) 
+            #copy(fname, dst_dir)
 
 def cqt_nsynth(root):
     parsed_dir = os.path.join(root, 'parsed')
@@ -127,6 +139,13 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input', type=Path, required=True,
                         help='Root directory for data')
 
+    parser.add_argument('--domains', type=str, nargs='+', required=False,
+                    help='Desired instrument family domains')
+
+    parser.add_argument('--seq-len', type=int, default=4000, help='Length of samples') 
+    
+    parser.add_argument('--cqt', action='store_true', help='Perform Constant-Q Power transform on samples')
+   
     args = parser.parse_args()
 
     root = args.input
@@ -138,11 +157,12 @@ if __name__ == "__main__":
 
     # Parse data into domains
     print("Parsing into domains")
-    parse_nsynth(root, 'examples.json')
+    parse_nsynth(root, args.domains, args.seq_len, 'examples.json')
 
     # Compute and store Constant-Q transforms
-    print("Computing Constant-Q")
-    cqt_nsynth(root)
+    if args.cqt:
+        print("Computing Constant-Q")
+        cqt_nsynth(root)
 
     # Split each domain into train, test, and val folders
     print("Splitting into training and testing")
