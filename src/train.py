@@ -51,7 +51,7 @@ class Trainer:
         self.eval_d_right = LossMeter('eval d')
         self.eval_total = LossMeter('eval total')
         
-        if args.model_name == 'UMT':
+        if args.model_name == 'umt':
             self.encoder = Encoder(args)
         else:
             self.encoder = CPC(args)
@@ -360,7 +360,7 @@ class Trainer:
                 x = wrap(x)
                 x_aug = wrap(x_aug)
                 
-                if self.args.model_name == 'UMT':
+                if self.args.model_name == 'umt':
                     batch_loss = self.train_batch(x, x_aug, dset_num)
                 else:
                     batch_loss = self.train_batch_cpc(x, x_aug, dset_num)
@@ -402,7 +402,7 @@ class Trainer:
                 x = wrap(x)
                 x_aug = wrap(x_aug)
                 
-                if self.args.model_name == 'UMT':
+                if self.args.model_name == 'umt':
                     batch_loss = self.eval_batch(x, x_aug, dset_num)
                 else:
                     batch_loss = self.eval_batch_cpc(x, x_aug, dset_num)
@@ -489,7 +489,7 @@ class Trainer:
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Code for A Universal Music Translation Network')
     # Env options:
-    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc'], 
+    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc-gru', 'umtcpc-wavenet'], 
     help='umt or umtcpc')
     parser.add_argument('--epochs', type=int, default=10000, metavar='n',
     help='number of epochs to train (default: 92)')

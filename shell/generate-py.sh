@@ -6,13 +6,13 @@
 #
 # Python-based generation
 #
-# usage: ./generate.sh experiment-name path-to-files decoders model-name sample-length
-# example usage: ./generate.sh umtcpc-pretrained-wavenet results/05_05_21/umtcpc_pretrained_wavenet-py "0 1 2" umtcpc 80000
+# usage: ./generate.sh experiment-name path-to-files decoders model-name 
+# example usage: ./generate.sh umtcpc-pretrained-wavenet results/05_05_21/umtcpc_pretrained_wavenet-py "0 1 2" umtcpc 
 
 #!/usr/bin/env bash
 
 DATE=`date +%d_%m_%Y`
 CODE=src
 
-python3.7 ${CODE}/data/run_on_files.py  --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --files $2 --decoders $3 --model-name $4 --sample-len $5 --sample-len 80000 --py --skip-filter 
+python3.7 ${CODE}/data/run_on_files.py  --batch-size 2 --checkpoint checkpoints/$1/lastmodel --output-next-to-orig --files $2 --decoders $3 --model-name $4 --py 
 
