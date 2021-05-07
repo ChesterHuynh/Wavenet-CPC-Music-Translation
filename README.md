@@ -30,6 +30,12 @@ Project Organization
     │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
     │   │
     │   ├── Solo_Cello     <- Generated samples from solo cello input samples
     │   │   │
@@ -46,6 +52,12 @@ Project Organization
     │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
     │   │
     │   ├── Solo_Violin    <- Generated samples from solo cello input samples
     │   │   │
@@ -62,6 +74,12 @@ Project Organization
     │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
     │   │   │
     │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
+    │   │   │
+    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     │
