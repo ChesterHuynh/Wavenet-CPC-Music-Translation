@@ -9,45 +9,73 @@ Project Organization
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
+    ├── notebooks          <- Jupyter notebooks. 
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
+    ├── samples            <- Generated audio samples
+    │   ├── Beethoven_Solo_Piano  <- Generated samples from Beethoven solo piano input samples
+    │   │   │
+    │   │   └── 0.wav        <- Original sample #0
+    │   │   │
+    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
+    │   │   │
+    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │
+    │   ├── Solo_Cello     <- Generated samples from solo cello input samples
+    │   │   │
+    │   │   └── 0.wav        <- Original sample #0
+    │   │   │
+    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
+    │   │   │
+    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │
+    │   ├── Solo_Violin    <- Generated samples from solo cello input samples
+    │   │   │
+    │   │   └── 0.wav        <- Original sample #0
+    │   │   │
+    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
+    │   │   │
+    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
+    │   │   │
+    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    ├── shell              <- Shell scripts that invoke source code
+    |
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
+    │   └── data           <- Scripts to download or generate data
     │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
+    │   └── evaluation     <- Scripts to evaluate trained models
     │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
+    │   └── models         <- Scripts to train models and then use trained models to make predictions
     │   │
     │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
