@@ -16,6 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('--seq-len', type=int, default=80000)
 
     # Generating
+    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc'],
+                        help='Type of architecture (UMT or UMTCPC)')
     parser.add_argument('--files', type=Path, nargs='+', required=False,
                         help='Top level directories of input music files')
     parser.add_argument('-og', '--output-generating', type=Path,

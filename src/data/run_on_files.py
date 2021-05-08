@@ -21,6 +21,7 @@ from src.models.wavenet import WaveNet
 from src.models.wavenet_generator import WavenetGenerator
 from src.models.nv_wavenet_generator import NVWavenetGenerator
 
+from src.models.cpc import CPC, CPCGRU 
 
 
 def extract_id(path):
@@ -36,28 +37,43 @@ def generate(args):
     assert len(checkpoints) >= 1, "No checkpoints found."
 
     model_args = torch.load(args.checkpoint.parent / 'args.pth')[0]
-    encoder = wavenet_models.Encoder(model_args)
+    if args.model_name == 'umt':
+        encoder = wavenet_models.Encoder(model_args)
+    elif args.model_name == 'umtcpc-gru':
+        encoder = CPCGRU(model_args)
+    else:
+        encoder = CPC(model_args)
     encoder.load_state_dict(torch.load(checkpoints[0])['encoder_state'])
     encoder.eval()
     encoder = encoder.cuda()
 
+    def init_hidden(size, use_gpu=True):
+        if use_gpu: return torch.zeros(1, size, model_args.latent_d).cuda()
+        else: return torch.zeros(1, size, model_args.latent_d)
+    
     decoders = []
     decoder_ids = []
+    
+    if args.model_name == 'umt':
+        cond_repeat = 800
+    else:
+        cond_repeat = 160
+
     for checkpoint in checkpoints:
         decoder = WaveNet(model_args)
         decoder.load_state_dict(torch.load(checkpoint)['decoder_state'])
         decoder.eval()
         decoder = decoder.cuda()
         if args.py:
-            decoder = WavenetGenerator(decoder, args.batch_size, wav_freq=args.rate)
+            decoder = WavenetGenerator(decoder, args.batch_size, wav_freq=args.rate, cond_repeat=cond_repeat)
         else:
-            decoder = NVWavenetGenerator(decoder, args.rate * (args.split_size // 20), args.batch_size, 3)
+            decoder = NVWavenetGenerator(decoder, args.rate * (args.split_size // 20), args.batch_size, 3, cond_repeat=cond_repeat)
 
         decoders += [decoder]
         decoder_ids += [extract_id(checkpoint)]
 
     xs = []
-    assert args.output_next_to_orig ^ (args.output is not None)
+    assert args.output_next_to_orig ^ (args.output_generated is not None)
 
     if len(args.files) == 1 and args.files[0].is_dir():
         top = args.files[0]
@@ -66,7 +82,9 @@ def generate(args):
         file_paths = args.files
 
     if not args.skip_filter:
-        file_paths = [f for f in file_paths if not '_' in str(f.name)]
+        #file_paths = [f for f in file_paths if not '_' in str(f.name)]
+        # skip translated samples that end in "_x.wav"
+        file_paths = [f for f in file_paths if '_' not in f.name or len(str(f.name).split('_')[-1]) != 5]
 
     for file_path in file_paths:
         if file_path.suffix == '.wav':
@@ -91,30 +109,32 @@ def generate(args):
     xs = torch.stack(xs).contiguous()
     print(f'xs size: {xs.size()}')
 
-    def save(x, decoder_ix, filepath):
+    def save(x, decoder_ix, filepath, model_name):
         wav = utils.inv_mu_law(x.cpu().numpy())
         print(f'X size: {x.shape}')
         print(f'X min: {x.min()}, max: {x.max()}')
 
         if args.output_next_to_orig:
-            save_audio(wav.squeeze(), filepath.parent / f'{filepath.stem}_{decoder_ix}.wav', rate=args.rate)
+            save_audio(wav.squeeze(), filepath.parent / f'{model_name}_{filepath.stem}_{decoder_ix}.wav', rate=args.rate)
         else:
-            save_audio(wav.squeeze(), args.output / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
+            save_audio(wav.squeeze(), args.output_generated / str(decoder_ix) / filepath.with_suffix('.wav').name, rate=args.rate)
 
     yy = {}
     with torch.no_grad():
         zz = []
         for xs_batch in torch.split(xs, args.batch_size):
-            zz += [encoder(xs_batch)]
-        #zz = torch.cat(zz, dim=0) TODO: bring this line back once context vectors have consistent dims
+            if args.model_name == 'umt':
+                output = encoder(xs_batch)
+            else:
+                _, output = encoder(xs_batch)
+            zz += [output]
+        zz = torch.cat(zz, dim=0)
 
         with utils.timeit("Generation timer"):
             for i, decoder_id in enumerate(decoder_ids):
                 yy[decoder_id] = []
                 decoder = decoders[i]
-                #for zz_batch in torch.split(zz, args.batch_size):
-                # TODO: avoid using hack for inconsistent dimensions in context vectors
-                for zz_batch in zz:
+                for zz_batch in torch.split(zz, args.batch_size):
                     print(zz_batch.shape)
                     splits = torch.split(zz_batch, args.split_size, -1)
                     audio_data = []
@@ -128,14 +148,17 @@ def generate(args):
 
     for decoder_ix, decoder_result in yy.items():
         for sample_result, filepath in zip(decoder_result, file_paths):
-            save(sample_result, decoder_ix, filepath)
+            save(sample_result, decoder_ix, filepath, args.model_name)
 
 
 def main():
     parser = ArgumentParser()
+    
+    parser.add_argument('--model-name', type=str, required=True, choices=['umt', 'umtcpc-gru', 'umtcpc-wavenet'],
+                        help='Type of model architecture')
     parser.add_argument('--files', type=Path, nargs='+', required=False,
                         help='Top level directories of input music files')
-    parser.add_argument('-o', '--output', type=Path,
+    parser.add_argument('-og', '--output-generated', type=Path,
                         help='Output directory for output files')
     parser.add_argument('--checkpoint', type=Path, required=True,
                         help='Checkpoint path')
