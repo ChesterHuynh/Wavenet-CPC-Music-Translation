@@ -16,8 +16,12 @@ def parse_epoch_loss(fpath):
             train_loss = s[s.find("Train loss: ") + len("Train loss: (") : s.find(")")]
             test_loss = s[s.find("Test loss ") + len("Test loss (") : -1]
 
-            train_loss = [float(loss) for loss in train_loss.split(", ")]
-            test_loss = [float(loss) for loss in test_loss.split(", ")]
+            if len(train_loss.split(", ")) == 4:
+                train_loss = [float(loss) for loss in train_loss.split(", ")]
+                test_loss = [float(loss) for loss in test_loss.split(", ")]
+            elif len(train_loss.split(", ")) == 7:
+                train_loss = [float(loss) for loss in (train_loss.split(", ")[:3] + [train_loss.split(", ")[-1]])]
+                test_loss = [float(loss) for loss in (test_loss.split(", ")[:3] + [test_loss.split(", ")[-1]])]
 
             train_losses.append(train_loss)
             test_losses.append(test_loss)

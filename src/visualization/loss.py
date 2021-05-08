@@ -27,7 +27,7 @@ plt.rcParams.update({
     ])
 })
 
-def plot_batch_loss(fpath: Path, dst: Path):
+def plot_batch_loss(fpath: Path, dst: Path, title="", ax=None):
     train_losses, test_losses = parse_batch_loss(fpath)
     n_epochs = train_losses.shape[0]
     train_losses = pd.DataFrame(train_losses.T)
@@ -43,47 +43,55 @@ def plot_batch_loss(fpath: Path, dst: Path):
                                 value_vars=list(np.arange(n_epochs)), 
                                 var_name='Epoch', value_name='Loss')
 
-    fig, ax = plt.subplots(dpi=200, figsize=(6.4, 4.8))
+    if ax is None:
+        fig, ax = plt.subplots(dpi=200, figsize=(6.4, 4.8))
     sns.lineplot(data=train_losses_long, x='Epoch', y='Loss', label='Train loss', ax=ax)
     sns.lineplot(data=test_losses_long, x='Epoch', y='Loss', label='Test loss', ax=ax)
+    ax.set_title(title)
     ax.legend(frameon=False)
-    fig.tight_layout()
-    
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    plt.savefig(dst / "batch_loss.png")
+    return ax
 
 
-def plot_epoch_loss(fpath: Path, dst: Path):
+def plot_epoch_loss(fpath: Path, dst: Path, title="", ax=None):
+    title = fr"{title}"
     train_losses, test_losses = parse_epoch_loss(fpath)
 
-    fig, ax = plt.subplots(dpi=200, figsize=(6.4, 4.8))
+    if ax is None:
+        fig, ax = plt.subplots(dpi=200, figsize=(6.4, 4.8))
     ax.plot(train_losses.sum(axis=1), label = "Train Loss")
     ax.plot(test_losses.sum(axis=1), label="Test Loss")
     ax.set(xlabel="Epoch", ylabel="Loss")
+    ax.set_title(title)
     ax.legend(frameon=False)
-    fig.tight_layout()
-
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    plt.savefig(dst / "epoch_loss.png")
+    return ax
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Visualize train and test loss from log file')
     parser.add_argument('--file', type=Path, required=True, 
-                        help="Path to log file")
+                        help="Path to log file", nargs='+')
     parser.add_argument('--dst', type=Path, required=True, 
                         help="Path to save plots")
     parser.add_argument('--how', type=str, choices=["batch", "epoch"], default="batch", 
-                        help="Loss values to use")
+                        help="Loss values to use", nargs='+')
 
     args = parser.parse_args()
-    fpath = args.file
+    files = args.file
     dst = args.dst
     how = args.how
+    titles = [r"$\mathrm{CPC}_{\mathrm{GRU}} \mathrm{+} \mathrm{WN}_{\mathrm{dec}}$",
+              r"$\mathrm{CPC}_{\mathrm{WN}} \mathrm{+} \mathrm{WN}_{\mathrm{dec}}$"]
 
-    if how == "batch":
-        plot_batch_loss(fpath, dst)
-    elif how == "epoch":
-        plot_epoch_loss(fpath, dst)
+    fig, axs = plt.subplots(1, len(files), dpi=200, figsize=(6.4 * len(files), 4.8))
+    axs = axs.flatten()
+
+    for fpath, h, title, ax in zip(files, how, titles, axs):
+        if h == "batch":
+            plot_batch_loss(fpath, dst, title=title, ax=ax)
+        elif h == "epoch":
+            plot_epoch_loss(fpath, dst, title=title, ax=ax)
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    fig.tight_layout()
+    plt.savefig(dst / f"loss.png")
