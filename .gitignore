@@ -86,6 +86,9 @@ target/
 # exclude results
 /results/
 
+# exclude plots
+/plots/
+
 # Mac OS-specific storage files
 .DS_Store
 
