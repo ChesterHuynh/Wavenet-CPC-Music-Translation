@@ -14,76 +14,96 @@ Project Organization
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
-    ├── samples            <- Generated audio samples
-    │   ├── Beethoven_Solo_Piano  <- Generated samples from Beethoven solo piano input samples
+    ├── samples                           <- Generated audio samples
+    │   ├── Beethoven_Solo_Piano          <- Generated samples from Beethoven solo piano input samples
     │   │   │
-    │   │   └── 0.wav        <- Original sample #0
+    │   │   └── 0.wav                     <- Original sample #0
     │   │   │
-    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
+    │   │   └── umt_0_0.wav               <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
     │   │   │
-    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
+    │   │   └── umt_0_1.wav               <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
+    │   │   └── umt_0_2.wav               <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_0.wav        <- Sample #0 translated into domain 0 (Solo_Cello)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_1.wav        <- Sample #0 translated into domain 1 (Solo_Violin)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_2.wav        <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-wavenet_0_0.wav    <- Sample #0 translated into domain 0 (Solo_Cello)
+    │   │   │                                using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_1.wav    <- Sample #0 translated into domain 1 (Solo_Violin)
+    │   │   │                                using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_2.wav    <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano)
+    │   │                                    using CPC WaveNet with WaveNet autoregressor
+    │   ├── Solo_Cello                    <- Generated samples from solo cello input samples
     │   │   │
-    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
+    │   │   └── 0.wav                     <- Original sample #0
     │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
+    │   │   └── umt_0_0.wav               <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
     │   │   │
-    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umt_0_1.wav               <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umt_0_2.wav               <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano)
+    │   │   │                                using UMT
+    │   │   └── umtcpc-gru_0_0.wav        <- Sample #0 translated into domain 0 (Solo_Cello)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_1.wav        <- Sample #0 translated into domain 1 (Solo_Violin)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_2.wav        <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-wavenet_0_0.wav    <- Sample #0 translated into domain 0 (Solo_Cello) 
+    │   │   │                                using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_1.wav    <- Sample #0 translated into domain 1 (Solo_Violin) 
+    │   │   │                                using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_2.wav    <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) 
+    │   │                                    using CPC WaveNet with WaveNet autoregressor
+    │   ├── Solo_Violin                   <- Generated samples from solo cello input samples
     │   │   │
-    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
-    │   │
-    │   ├── Solo_Cello     <- Generated samples from solo cello input samples
+    │   │   └── 0-80000.wav               <- Original long sample #0 (5-sec)
     │   │   │
-    │   │   └── 0.wav        <- Original sample #0
+    │   │   └── 0.wav                     <- Original sample #0
     │   │   │
-    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
+    │   │   └── umt_0_0.wav               <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
     │   │   │
-    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
+    │   │   └── umt_0_1.wav               <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
     │   │   │
-    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
+    │   │   └── umt_0_2-80000.wav         <- Long sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
+    │   │   └── umt_0_2.wav               <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
     │   │   │
-    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
-    │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
-    │   │
-    │   ├── Solo_Violin    <- Generated samples from solo cello input samples
-    │   │   │
-    │   │   └── 0.wav        <- Original sample #0
-    │   │   │
-    │   │   └── umt_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using UMT
-    │   │   │
-    │   │   └── umt_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using UMT
-    │   │   │
-    │   │   └── umt_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using UMT
-    │   │   │
-    │   │   └── umtcpc-gru_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with GRU autoregressor
-    │   │   │
-    │   │   └── umtcpc-gru_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with GRU autoregressor
-    │   │   │
-    │   │   └── umtcpc-gru_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with GRU autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_0.wav  <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet with WaveNet autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_1.wav  <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet with WaveNet autoregressor
-    │   │   │
-    │   │   └── umtcpc-wavenet_0_2.wav  <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using CPC WaveNet with WaveNet autoregressor
+    │   │   └── umtcpc-gru_0_0.wav        <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet
+    │   │   │                                with GRU autoregressor
+    │   │   └── umtcpc-gru_0_1.wav        <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet 
+    │   │   │                                with GRU autoregressor
+    │   │   └── umtcpc-gru_0_2-80000.wav  <- Long sample #0 translated into domain 2 (Beethoven_Solo_Piano)
+    │   │   │                                using CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-gru_0_2.wav        <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using 
+    │   │   │                                CPC WaveNet with GRU autoregressor
+    │   │   └── umtcpc-wavenet_0_0.wav    <- Sample #0 translated into domain 0 (Solo_Cello) using CPC WaveNet 
+    │   │   │                                with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_1.wav    <- Sample #0 translated into domain 1 (Solo_Violin) using CPC WaveNet 
+    │   │   │                                with WaveNet autoregressor
+    │   │   └── umtcpc-wavenet_0_2.wav    <- Sample #0 translated into domain 2 (Beethoven_Solo_Piano) using 
+    │                                        CPC WaveNet with WaveNet autoregressor
     │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    ├── setup.py            <- makes project pip installable (pip install -e .) so src can be imported
     │
-    ├── shell              <- Shell scripts that invoke source code
+    ├── shell               <- Shell scripts that invoke source code
+    │   ├── generate-py.sh  <- Generate translated outputs from a trained model in a Python context
+    │   │
+    │   ├── generate.sh     <- Faster generation of translated outputs from a trained model using CUDA
+    │   │
+    │   ├── inference-py.sh <- Creates original audio samples and generates translations from a 
+    │   │                      trained model in a Python context
+    │   ├── inference.sh    <- Creates original audio samples and generates translations from a 
+    │   │                      trained model using CUDA
+    │   ├── make_dataset.sh <- Downloads and creates preprocessed train/val/test folders (~30 GB)
+    │   │
+    │   ├── sample.sh       <- Creates original audio samples to be translated
+    │   │
+    │   ├── train.sh        <- Begins model training with specified hyperparameters and output domains
     │
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
